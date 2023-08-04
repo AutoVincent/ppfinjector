@@ -1,0 +1,3 @@
+LIBRARY   PPFINJECTOR
+EXPORTS
+   DetourFinishHelperProcess   @1

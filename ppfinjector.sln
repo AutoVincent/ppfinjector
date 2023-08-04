@@ -20,6 +20,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ppftk", "tk\ppftk\ppftk.vcxproj", "{5561B3C1-3815-4992-9848-DCC234DB7539}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "emulauncher", "app\emulauncher\emulauncher.vcxproj", "{716DF62E-50E3-4FFD-A97A-0219076DDE17}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E5EB2B94-4E44-4F3F-97BF-4025227C8239} = {E5EB2B94-4E44-4F3F-97BF-4025227C8239}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -12,6 +12,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\ppfbase\branding.h" />
+    <ClInclude Include="inc\ppfbase\preprocessor_utils.h" />
+    <ClInclude Include="inc\ppfbase\process\this_process.h" />
+    <ClInclude Include="inc\ppfbase\stdext\string.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\process\this_process.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
