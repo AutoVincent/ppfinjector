@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <PpfBase>$(SolutionDir)base</PpfBase>
+    <PpfDeps>$(SolutionDir)deps</PpfDeps>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IncludePath>$(PpfBase)\ppfbase\inc;$(PpfDeps);$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="PpfBase">
+      <Value>$(PpfBase)</Value>
+    </BuildMacro>
+    <BuildMacro Include="PpfDeps">
+      <Value>$(PpfDeps)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>
