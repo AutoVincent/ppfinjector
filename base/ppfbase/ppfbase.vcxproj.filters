@@ -9,10 +9,33 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="PublicHeaders\process">
+      <UniqueIdentifier>{9fa16cc0-898e-41b0-9518-34702b4159ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\process">
+      <UniqueIdentifier>{7aa57163-651b-4ee8-8904-31e878fcccd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PublicHeaders\stdext">
+      <UniqueIdentifier>{4d2b490d-8380-4588-bb5a-453faa01eced}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\ppfbase\branding.h">
       <Filter>PublicHeaders</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ppfbase\preprocessor_utils.h">
+      <Filter>PublicHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppfbase\process\this_process.h">
+      <Filter>PublicHeaders\process</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppfbase\stdext\string.h">
+      <Filter>PublicHeaders\stdext</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\process\this_process.cpp">
+      <Filter>Source\process</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
