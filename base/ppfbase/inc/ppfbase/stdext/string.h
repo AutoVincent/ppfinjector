@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace tdd::ppf::stdext {
+namespace tdd::stdext {
 
    template <typename CharT>
    void StripTrailingNulls(std::basic_string<CharT>& s)
@@ -11,5 +11,8 @@ namespace tdd::ppf::stdext {
          s.pop_back();
       }
    }
+
+   std::string WideToUtf8(const std::wstring& src);
+   std::wstring Utf8ToWide(const std::string& src);
 
 }

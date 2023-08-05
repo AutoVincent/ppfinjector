@@ -1,4 +1,5 @@
 #include <ppfbase/branding.h>
+#include <ppfbase/logging/logging.h>
 #include <ppfbase/process/this_process.h>
 #include <ppfbase/stdext/string.h>
 
@@ -9,14 +10,14 @@
 
 #include <detours/detours.h>
 
-namespace tdd::ppf::app::emulauncher {
+namespace tdd::app::emulauncher {
    namespace fs = std::filesystem;
 
    void LaunchBizHawk(const std::wstring& emuHawk)
    {
       auto& launcher = base::process::ThisProcess::ImagePath();
       const auto injectorPath =
-         (launcher.parent_path() / PPF_INJECTOR_DLL_W).string();
+         (launcher.parent_path() / TDD_PPF_INJECTOR_DLL_W).string();
 
       std::wstring hawkPath = emuHawk;
       std::wstring hawkCurrentDir = fs::path(hawkPath).parent_path().wstring();
@@ -51,6 +52,8 @@ namespace tdd::ppf::app::emulauncher {
 //int main(int argc, char** argv)
 int main()
 {
+   tdd::base::logging::InitSingleProcessLog();
+   TDD_LOG(Info) << "EmuLauncher started";
    std::wstring bizhawk(MAX_PATH, L'\0');
 
    OPENFILENAMEW ofn{0};
@@ -71,11 +74,11 @@ int main()
       return 1;
    }
 
-   tdd::ppf::stdext::StripTrailingNulls(bizhawk);
+   tdd::stdext::StripTrailingNulls(bizhawk);
 
    std::wcout << "Found: " << bizhawk << std::endl;
 
-   tdd::ppf::app::emulauncher::LaunchBizHawk(bizhawk);
+   tdd::app::emulauncher::LaunchBizHawk(bizhawk);
 
    return 0;
 }

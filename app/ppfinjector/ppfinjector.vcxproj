@@ -77,6 +77,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\base\ppfbase\ppfbase.vcxproj">
+      <Project>{2662f98e-e55c-4666-9790-b399a7985ca0}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\deps\detours\detours.vcxproj">
       <Project>{3b717b2a-edb5-42a0-ade7-c361629ffe22}</Project>
     </ProjectReference>

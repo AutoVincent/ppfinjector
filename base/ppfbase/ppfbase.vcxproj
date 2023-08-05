@@ -12,12 +12,37 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\ppfbase\branding.h" />
+    <ClInclude Include="inc\ppfbase\chrono\timestamp.h" />
+    <ClInclude Include="inc\ppfbase\diagnostics\assert.h" />
+    <ClInclude Include="inc\ppfbase\diagnostics\debugger.h" />
+    <ClInclude Include="inc\ppfbase\filesystem\path_service.h" />
+    <ClInclude Include="inc\ppfbase\logging\ilog.h" />
+    <ClInclude Include="inc\ppfbase\logging\logging.h" />
+    <ClInclude Include="inc\ppfbase\logging\log_msg.h" />
+    <ClInclude Include="inc\ppfbase\logging\severity.h" />
+    <ClInclude Include="inc\ppfbase\logging\sharing_mode.h" />
     <ClInclude Include="inc\ppfbase\preprocessor_utils.h" />
+    <ClInclude Include="inc\ppfbase\process\this_module.h" />
     <ClInclude Include="inc\ppfbase\process\this_process.h" />
+    <ClInclude Include="inc\ppfbase\stdext\stream_operator.h" />
     <ClInclude Include="inc\ppfbase\stdext\string.h" />
+    <ClInclude Include="src\logging\basic_log.h" />
+    <ClInclude Include="src\logging\logger.h" />
+    <ClInclude Include="src\logging\single_process_log.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\chrono\timestamp.cpp" />
+    <ClCompile Include="src\diagnostics\debugger.cpp" />
+    <ClCompile Include="src\filesystem\path_service.cpp" />
+    <ClCompile Include="src\logging\basic_log.cpp" />
+    <ClCompile Include="src\logging\logger.cpp" />
+    <ClCompile Include="src\logging\logging.cpp" />
+    <ClCompile Include="src\logging\log_msg.cpp" />
+    <ClCompile Include="src\logging\severity.cpp" />
+    <ClCompile Include="src\process\this_module.cpp" />
     <ClCompile Include="src\process\this_process.cpp" />
+    <ClCompile Include="src\stdext\stream_operator.cpp" />
+    <ClCompile Include="src\stdext\string.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

@@ -1,3 +1,5 @@
+#include <ppfbase/logging/logging.h>
+
 #include <iostream>
 
 #include <Windows.h>
@@ -17,9 +19,13 @@ namespace {
       _In_ DWORD dwFlagsAndAttributes,
       _In_opt_ HANDLE hTemplateFile)
    {
-      static const auto kConsole = AllocConsole();
+      thread_local static bool sDoHook = true;
 
-      std::wcout << "Opening: " << lpFileName << std::endl;
+      if (sDoHook) {
+         sDoHook = false;
+         TDD_LOG(Info) << "Opening: " << lpFileName;
+         sDoHook = true;
+      }
 
       return g_origCreateFileW(
          lpFileName,
@@ -42,6 +48,7 @@ BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID)
     switch (reason)
     {
     case DLL_PROCESS_ATTACH:
+       tdd::base::logging::InitDllLog();
        DetourRestoreAfterWith();
        DetourTransactionBegin();
        DetourUpdateThread(GetCurrentThread());
