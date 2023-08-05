@@ -2,7 +2,7 @@
 
 #include <filesystem>
 
-namespace tdd::base::process::ThisProcess {
+namespace tdd::base::process::ThisModule {
    const std::filesystem::path& ImagePath();
    const std::filesystem::path& Name();
 }

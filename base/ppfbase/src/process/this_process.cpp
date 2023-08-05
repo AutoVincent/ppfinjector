@@ -4,7 +4,7 @@
 
 #include <Windows.h>
 
-namespace tdd::ppf::base::process::ThisProcess {
+namespace tdd::base::process::ThisProcess {
 
 namespace {
    namespace fs = std::filesystem;
@@ -14,8 +14,7 @@ namespace {
       std::wstring path(_MAX_PATH, L'\0');
 
       if (0 == GetModuleFileNameW(NULL, path.data(), MAX_PATH)) {
-         // TODO: build an error hierachy.
-         throw std::runtime_error("Can't get process path");
+         return L"";
       }
 
       stdext::StripTrailingNulls(path);
@@ -27,6 +26,12 @@ const fs::path& ImagePath()
 {
    static const auto kPath = GetImagePath();
    return kPath;
+}
+
+const fs::path& Name()
+{
+   static const auto kName = ImagePath().filename();
+   return kName;
 }
 
 }

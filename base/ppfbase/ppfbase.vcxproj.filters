@@ -18,6 +18,33 @@
     <Filter Include="PublicHeaders\stdext">
       <UniqueIdentifier>{4d2b490d-8380-4588-bb5a-453faa01eced}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PublicHeaders\logging">
+      <UniqueIdentifier>{8d5e7aee-37d0-46f8-aa80-48cbbef3e5a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\logging">
+      <UniqueIdentifier>{0daa0609-f2fa-4006-ab4a-7006119e10a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PublicHeaders\filesystem">
+      <UniqueIdentifier>{f49c1cd3-ba18-4d11-82e6-32e788b7efcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\filesystem">
+      <UniqueIdentifier>{1cce5cef-6dfa-4234-8b62-b41e855948c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PublicHeaders\diagnostics">
+      <UniqueIdentifier>{a4594e16-e0fc-4ed6-b77c-1d83fc1e14f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\diagnostics">
+      <UniqueIdentifier>{68e94cc3-5602-44af-bddd-7e040773ca3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PublicHeaders\chrono">
+      <UniqueIdentifier>{b48eb39a-a22e-4571-a918-0ed3f0e6dfe6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\chrono">
+      <UniqueIdentifier>{9b7b4d07-37d6-4779-9d12-59e02d12862d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\stdext">
+      <UniqueIdentifier>{4a3257c7-c41d-4d38-85c6-0e0273c02e3e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\ppfbase\branding.h">
@@ -32,9 +59,84 @@
     <ClInclude Include="inc\ppfbase\stdext\string.h">
       <Filter>PublicHeaders\stdext</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ppfbase\filesystem\path_service.h">
+      <Filter>PublicHeaders\filesystem</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppfbase\diagnostics\assert.h">
+      <Filter>PublicHeaders\diagnostics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppfbase\diagnostics\debugger.h">
+      <Filter>PublicHeaders\diagnostics</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppfbase\logging\ilog.h">
+      <Filter>PublicHeaders\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppfbase\logging\logging.h">
+      <Filter>PublicHeaders\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="src\logging\basic_log.h">
+      <Filter>Source\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppfbase\chrono\timestamp.h">
+      <Filter>PublicHeaders\chrono</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppfbase\logging\log_msg.h">
+      <Filter>PublicHeaders\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppfbase\logging\severity.h">
+      <Filter>PublicHeaders\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="src\logging\logger.h">
+      <Filter>Source\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppfbase\stdext\stream_operator.h">
+      <Filter>PublicHeaders\stdext</Filter>
+    </ClInclude>
+    <ClInclude Include="src\logging\single_process_log.h">
+      <Filter>Source\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppfbase\logging\sharing_mode.h">
+      <Filter>PublicHeaders\logging</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppfbase\process\this_module.h">
+      <Filter>PublicHeaders\process</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\process\this_process.cpp">
+      <Filter>Source\process</Filter>
+    </ClCompile>
+    <ClCompile Include="src\filesystem\path_service.cpp">
+      <Filter>Source\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\diagnostics\debugger.cpp">
+      <Filter>Source\diagnostics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logging\basic_log.cpp">
+      <Filter>Source\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logging\logging.cpp">
+      <Filter>Source\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="src\chrono\timestamp.cpp">
+      <Filter>Source\chrono</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logging\log_msg.cpp">
+      <Filter>Source\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logging\logger.cpp">
+      <Filter>Source\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="src\logging\severity.cpp">
+      <Filter>Source\logging</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stdext\string.cpp">
+      <Filter>Source\stdext</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stdext\stream_operator.cpp">
+      <Filter>Source\stdext</Filter>
+    </ClCompile>
+    <ClCompile Include="src\process\this_module.cpp">
       <Filter>Source\process</Filter>
     </ClCompile>
   </ItemGroup>
