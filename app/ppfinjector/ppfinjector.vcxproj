@@ -87,12 +87,14 @@
   <ItemGroup>
     <ClCompile Include="src\hook_status.cpp" />
     <ClCompile Include="src\ppfinjector.cpp" />
+    <ClCompile Include="src\read_ops_log.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ppfinjector.def" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\hook_status.h" />
+    <ClInclude Include="src\read_ops_log.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
