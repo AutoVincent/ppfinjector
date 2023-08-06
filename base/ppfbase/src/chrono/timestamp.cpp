@@ -58,7 +58,7 @@ std::string Now()
       << std::setw(2) << now.wHour << ':'
       << std::setw(2) << now.wMinute << ':'
       << std::setw(2) << now.wSecond << '.'
-      << std::setw(2) << now.wMilliseconds;
+      << std::setw(3) << now.wMilliseconds;
    AddTimezoneBias(ss);
    AddProcessUptime(ss);
    return ss.str();

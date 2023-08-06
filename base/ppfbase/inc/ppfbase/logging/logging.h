@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ppfbase/diagnostics/assert.h>
 #include <ppfbase/logging/log_msg.h>
 #include <ppfbase/logging/sharing_mode.h>
 #include <ppfbase/stdext/stream_operator.h>
@@ -34,3 +35,7 @@ namespace tdd::base::logging {
 #define TDD_VLOG2()        TDD_VLOG(2)
 #define TDD_VLOG1()        TDD_VLOG(1)
 #define TDD_LOG_DEBUG()    TDD_LOG(Debug)
+#define TDD_LOG_INFO()     TDD_LOG(Info)
+#define TDD_LOG_WARN()     TDD_LOG(Warning)
+#define TDD_LOG_ERROR()    TDD_LOG(Error)
+#define TDD_LOG_FATAL()    TDD_LOG(Fatal)

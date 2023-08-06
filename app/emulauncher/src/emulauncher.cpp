@@ -53,7 +53,7 @@ namespace tdd::app::emulauncher {
 int main()
 {
    tdd::base::logging::InitSingleProcessLog();
-   TDD_LOG(Info) << "EmuLauncher started";
+   TDD_LOG_INFO() << "EmuLauncher started";
    std::wstring bizhawk(MAX_PATH, L'\0');
 
    OPENFILENAMEW ofn{0};
