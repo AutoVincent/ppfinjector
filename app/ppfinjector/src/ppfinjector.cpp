@@ -1,3 +1,5 @@
+#include "hook_status.h"
+
 #include <ppfbase/logging/logging.h>
 
 #include <iostream>
@@ -19,13 +21,20 @@ namespace {
       _In_ DWORD dwFlagsAndAttributes,
       _In_opt_ HANDLE hTemplateFile)
    {
-      thread_local static bool sDoHook = true;
-
-      if (sDoHook) {
-         sDoHook = false;
-         TDD_LOG(Info) << "Opening: " << lpFileName;
-         sDoHook = true;
+      if (!tdd::app::ppfinjector::HookStatus::ShouldExecute()) {
+         return g_origCreateFileW(
+            lpFileName,
+            dwDesiredAccess,
+            dwShareMode,
+            lpSecurityAttributes,
+            dwCreationDisposition,
+            dwFlagsAndAttributes,
+            hTemplateFile);
       }
+
+      TDD_PPF_DISABLE_FURTHER_HOOKS();
+
+      TDD_LOG(Info) << "Opening: " << lpFileName;
 
       return g_origCreateFileW(
          lpFileName,
