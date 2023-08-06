@@ -85,10 +85,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\dllmain.cpp" />
+    <ClCompile Include="src\hook_status.cpp" />
+    <ClCompile Include="src\ppfinjector.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ppfinjector.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\hook_status.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
