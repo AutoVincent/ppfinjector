@@ -4,6 +4,8 @@
 
 #include <ppfbase/preprocessor_utils.h>
 
+#include <fstream>
+#include <optional>
 #include <set>
 #include <string>
 #include <vector>
@@ -21,6 +23,11 @@ namespace tdd::tk::rompatch {
       TDD_DEFAULT_ALL_SPECIAL_MEMBERS(PatchDescriptor);
 
       FlatPatch Flatten() const;
+
+      void Compact();
+      [[nodiscard]] bool Compact(
+         std::ifstream& targetImage,
+         std::optional<size_t> gapSizeToFillOverride = std::nullopt);
 
       [[nodiscard]] bool AddPatchData(
          const size_t address,

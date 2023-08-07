@@ -1,4 +1,6 @@
+#include <ppftk/rom_patch/flat_patch.h>
 #include <ppftk/rom_patch/ppf/parser.h>
+#include <ppftk/rom_patch/ppf/ppf3.h>
 
 #include <ppfbase/logging/logging.h>
 
@@ -38,7 +40,7 @@ int main()
    //   << std::endl;
 
    auto target = std::ifstream(testTarget, std::ios::binary);
-   if (!patch->Compact(target)) {
+   if (!patch->Compact(target, 128)) {
       std::cout << "Unable to compact with fillers";
       return 2;
    }
@@ -46,12 +48,17 @@ int main()
    std::cout << "Patch entries: " << patch->GetFullPatch().size()
       << std::endl;
 
-   if (patch->ToFile(compactedPatch)) {
+   if (tdd::tk::rompatch::ppf::WritePpf3Patch(compactedPatch, patch.value())) {
       std::cout << "Unable to write compacted PFF" << std::endl;
    }
    else {
       std::cout << "Compacted patch saved" << std::endl;
    }
+
+   const auto flatPatch = patch->Flatten();
+   std::cout << "Flattend patch has "
+      << std::distance(flatPatch.begin(), flatPatch.end()) << " entries"
+      << std::endl;
 
    return 0;
 }
