@@ -9,18 +9,51 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="PublicHeaders\ppf">
-      <UniqueIdentifier>{e9eefb46-d1a6-4cf9-aaf6-98daefe13e40}</UniqueIdentifier>
+    <Filter Include="PublicHeaders\rom_patch">
+      <UniqueIdentifier>{a4a5c56c-6ac4-49f6-9a7d-140411aa7cb5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\rom_patch">
+      <UniqueIdentifier>{a41d2396-b6c8-4526-967e-39f480cd4b71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PublicHeaders\rom_patch\ppf">
+      <UniqueIdentifier>{361f698c-59f5-402a-a31e-d6f697b7f867}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\rom_patch\ppf">
+      <UniqueIdentifier>{1621f1ac-5d08-49b7-b334-9d407dd42072}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\ppftk\ppf\parser.h">
-      <Filter>PublicHeaders\ppf</Filter>
+    <ClInclude Include="inc\ppftk\rom_patch\ppf\parser.h">
+      <Filter>PublicHeaders\rom_patch\ppf</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppftk\rom_patch\patch_descriptor.h">
+      <Filter>PublicHeaders\rom_patch</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppftk\rom_patch\flat_patch.h">
+      <Filter>PublicHeaders\rom_patch</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rom_patch\ppf\v3.h">
+      <Filter>Source\rom_patch\ppf</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppftk\rom_patch\patch_item.h">
+      <Filter>PublicHeaders\rom_patch</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rom_patch\ppf\schema.h">
+      <Filter>Source\rom_patch\ppf</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\ppf\parser.cpp">
-      <Filter>Source</Filter>
+    <ClCompile Include="src\rom_patch\flat_patch.cpp">
+      <Filter>Source\rom_patch</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rom_patch\patch_descriptor.cpp">
+      <Filter>Source\rom_patch</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rom_patch\ppf\parser.cpp">
+      <Filter>Source\rom_patch\ppf</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rom_patch\ppf\v3.cpp">
+      <Filter>Source\rom_patch\ppf</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
