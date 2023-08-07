@@ -7,7 +7,7 @@
     <PpfTk>$(SolutionDir)tk</PpfTk>
   </PropertyGroup>
   <PropertyGroup>
-    <IncludePath>$(PpfTk)\tk\ppftk\inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(PpfTk)\ppftk\inc;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup>

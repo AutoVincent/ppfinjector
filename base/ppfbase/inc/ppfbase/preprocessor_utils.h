@@ -28,11 +28,11 @@
 
 #define TDD_DEFAULT_COPY(TypeName) \
    TypeName(const TypeName&) = default;    \
-   void operator=(const TypeName&) = default
+   TypeName& operator=(const TypeName&) = default
 
 #define TDD_DEFAULT_MOVE(TypeName) \
    TypeName(TypeName&&) = default;  \
-   void operator=(TypeName&&) = default
+   TypeName& operator=(TypeName&&) = default
 
 #define TDD_DEFAULT_COPY_MOVE(TypeName) \
    TDD_DEFAULT_COPY(TypeName); \
