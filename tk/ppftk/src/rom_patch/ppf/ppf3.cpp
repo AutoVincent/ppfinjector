@@ -64,178 +64,17 @@ namespace {
       stdext::Write(os, fileIdLength);
    }
 
-   [[nodiscard]] bool ValidateTarget(
-      std::ifstream& target,
-      const size_t fileSize,
-      const PatchItem& validationData)
-   {
-      if (validationData.data.empty()) {
-         return true;
-      }
-
-      if (fileSize < validationData.address + validationData.data.size()) {
-         TDD_LOG_ERROR() << "Target image smaller than required";
-         return false;
-      }
-
-      target.seekg(validationData.address, std::ios::beg);
-      if (!target.good()) {
-         TDD_LOG_ERROR() << "Unable to seek to validataion location";
-         return false;
-      }
-
-      DataBuffer targetData(validationData.data.size());
-      stdext::Read(target, targetData);
-      if (!target.good()) {
-         TDD_LOG_ERROR() << "Unable to read target for validation data";
-         return false;
-      }
-
-      if (targetData != validationData.data) {
-         TDD_LOG_ERROR() << "Validation failed";
-         return false;
-      }
-
-      return true;
-   }
 }
 
-Ppf3::Ppf3(PatchDescriptor&& patch)
-   : m_patch(std::move(patch))
-{}
-
-const PatchDescriptor::ValidationData& Ppf3::GetValidationData() const noexcept
+std::error_code WritePpf3Patch(
+   const std::filesystem::path& ppf3Path,
+   const PatchDescriptor& patch)
 {
-   return m_patch.GetValidationData();
-}
-
-const PatchDescriptor::FullPatch& Ppf3::GetFullPatch() const noexcept
-{
-   return m_patch.GetFullPatch();
-}
-
-void Ppf3::Compact()
-{
-   const auto& patch = m_patch.GetFullPatch();
-
-   if (patch.empty()) {
-      TDD_LOG_DEBUG() << "Nothing to compact";
-      return;
-   }
-
-   PatchDescriptor::FullPatch compacted;
-   PatchItem merged{};
-
-   for (const auto& entry : patch) {
-      if (entry.data.empty()) {
-         continue;
-      }
-
-      if (merged.address + merged.data.size() == entry.address) {
-         merged.data.insert(
-            merged.data.end(),
-            entry.data.begin(),
-            entry.data.end());
-         continue;
-      }
-
-      if (!merged.data.empty()) {
-         compacted.insert(merged);
-      }
-      merged = entry;
-   }
-
-   if (!merged.data.empty()) {
-      compacted.insert(merged);
-   }
-
-   m_patch.SetFullPatch(std::move(compacted));
-}
-
-bool Ppf3::Compact(std::ifstream& targetImage)
-{
-   const auto& patch = m_patch.GetFullPatch();
-   if (patch.empty()) {
-      TDD_LOG_DEBUG() << "Nothing to compact";
-      return true;
-   }
-
-   targetImage.seekg(0, std::ios::end);
-   const size_t fileSize = targetImage.tellg();
-
-   if (!ValidateTarget(targetImage, fileSize, m_patch.GetValidationData())) {
-      return false;
-   }
-
-   PatchDescriptor::FullPatch compacted;
-   PatchItem merged{};
-
-   for (const auto& entry : patch) {
-      if (entry.data.empty()) {
-         continue;
-      }
-
-      const auto currentEndAddress = merged.address + merged.data.size();
-      const auto gap = entry.address - currentEndAddress;
-
-      // If the gap is less than equal to the entry header size, we can save
-      // space by pulling in the data from the target image.
-      if (gap <= v3::kPatchEntryHeaderSize) {
-         if (gap > 0) {
-            if (currentEndAddress + gap + entry.data.size() > fileSize) {
-               TDD_LOG_ERROR() << "Patch does not apply to the target image";
-               return false;
-            }
-
-            targetImage.seekg(currentEndAddress, std::ios::beg);
-            if (!targetImage.good()) {
-               TDD_LOG_ERROR() << "Unable to seek to filler location";
-               return false;
-            }
-
-            DataBuffer filler(gap);
-            stdext::Read(targetImage, filler);
-            if (!targetImage.good()) {
-               TDD_LOG_ERROR() << "Unable to read target image for filler data";
-               return false;
-            }
-
-            merged.data.insert(
-               merged.data.end(),
-               filler.begin(),
-               filler.end());
-         }
-
-         merged.data.insert(
-            merged.data.end(),
-            entry.data.begin(),
-            entry.data.end());
-         continue;
-      }
-
-      if (!merged.data.empty()) {
-         compacted.insert(merged);
-      }
-      merged = entry;
-   }
-
-   if (!merged.data.empty()) {
-      compacted.insert(merged);
-   }
-
-   m_patch.SetFullPatch(std::move(compacted));
-
-   return true;
-}
-
-std::error_code Ppf3::ToFile(const std::filesystem::path& patchPath)
-{
-   
-   std::ofstream patch;
-   patch.exceptions(0);
-   patch.open(patchPath, std::ofstream::binary | std::ofstream::trunc);
-   if (!patch.good()) {
-      TDD_LOG_ERROR() << "Unable to create file: [" << patchPath.wstring()
+   std::ofstream ppf3;
+   ppf3.exceptions(0);
+   ppf3.open(ppf3Path, std::ofstream::binary | std::ofstream::trunc);
+   if (!ppf3.good()) {
+      TDD_LOG_ERROR() << "Unable to create file: [" << ppf3Path.wstring()
          << "]";
       return stdext::make_win32_ec(static_cast<uint32_t>(E_FAIL));
    }
@@ -249,7 +88,7 @@ std::error_code Ppf3::ToFile(const std::filesystem::path& patchPath)
 
    header.encoding = v3::Encoding::PPF3;
 
-   const auto& desc = m_patch.GetDescription();
+   const auto& desc = patch.GetDescription();
    if (desc.size() > sizeof(header.description)) {
       TDD_LOG_WARN() << "Description is longer than allowed length. Truncated.";
    }
@@ -260,7 +99,7 @@ std::error_code Ppf3::ToFile(const std::filesystem::path& patchPath)
       desc.c_str(),
       desc.size());
 
-   const auto& validationData = m_patch.GetValidationData();
+   const auto& validationData = patch.GetValidationData();
    if (validationData.address == v3::kPrimoDvdValidationAddress) {
       header.imageType = v3::TargetImageType::PrimoDvd;
    }
@@ -271,18 +110,18 @@ std::error_code Ppf3::ToFile(const std::filesystem::path& patchPath)
    header.validateImage = !validationData.data.empty();
    header.hasUndoData = false;
 
-   stdext::Write(patch, header);
+   stdext::Write(ppf3, header);
 
    if (header.validateImage) {
-      stdext::Write(patch, validationData.data);
+      stdext::Write(ppf3, validationData.data);
    }
 
-   for (const auto& entry : m_patch.GetFullPatch()) {
-      WritePatchEntry(patch, entry);
+   for (const auto& entry : patch.GetFullPatch()) {
+      WritePatchEntry(ppf3, entry);
    }
 
-   WriteFileId(patch, m_patch.GetFileId());
-   patch.close();
+   WriteFileId(ppf3, patch.GetFileId());
+   ppf3.close();
 
    return {};
 }

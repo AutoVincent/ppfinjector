@@ -59,7 +59,7 @@ namespace {
    }
 }
 
-std::optional<Ppf3> Parse(const std::filesystem::path& ppf)
+std::optional<PatchDescriptor> Parse(const std::filesystem::path& ppf)
 {
    TDD_ASSERT(ppf.is_absolute());
 
