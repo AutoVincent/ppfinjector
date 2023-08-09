@@ -2,6 +2,7 @@
 
 #include <ppfbase/logging/logging.h>
 
+#include <fstream>
 #include <iostream>
 
 int main()
@@ -11,18 +12,46 @@ int main()
    const std::filesystem::path testPatch(
       "C:\\dev\\ppfinjector\\app\\patchtester\\data\\SotN-Randomizer (1691056147921).ppf");
 
-   const auto patch = tdd::tk::rompatch::ppf::Parse(testPatch);
+   const std::filesystem::path testTarget(
+      "C:\\Games\\Castlevania-Symphony of the Night[U] [SLUS-00067]\\Castlevania - Symphony of the Night (USA) (Track 1).bin");
 
-   if (patch.has_value()) {
-      std::cout << "Success." << std::endl;
-      std::cout << "Validation data: "
-         << (patch->GetValidationData().data.empty() ? "not" : "")
-         << " present" << std::endl;
-      std::cout << "Patch entries: " << patch->GetFullPatch().size()
-         << std::endl;
+   const std::filesystem::path compactedPatch(
+      "C:\\dev\\ppfinjector\\app\\patchtester\\data\\compacted.ppf");
+
+   auto patch = tdd::tk::rompatch::ppf::Parse(testPatch);
+
+   if (!patch.has_value()) {
+      std::cout << "Failed to parse the patch" << std::endl;
+      return 1;
+   }
+
+   std::cout << "Success." << std::endl;
+   std::cout << "Validation data: "
+      << (patch->GetValidationData().data.empty() ? "not" : "")
+      << " present" << std::endl;
+   std::cout << "Patch entries: " << patch->GetFullPatch().size()
+      << std::endl;
+
+   //patch->Compact();
+   //std::cout << "After compact" << std::endl;
+   //std::cout << "Patch entries: " << patch->GetFullPatch().size()
+   //   << std::endl;
+
+   auto target = std::ifstream(testTarget, std::ios::binary);
+   if (!patch->Compact(target)) {
+      std::cout << "Unable to compact with fillers";
+      return 2;
+   }
+   std::cout << "After compact" << std::endl;
+   std::cout << "Patch entries: " << patch->GetFullPatch().size()
+      << std::endl;
+
+   if (patch->ToFile(compactedPatch)) {
+      std::cout << "Unable to write compacted PFF" << std::endl;
    }
    else {
-      std::cout << "Failed to parse the patch" << std::endl;
+      std::cout << "Compacted patch saved" << std::endl;
    }
+
    return 0;
 }

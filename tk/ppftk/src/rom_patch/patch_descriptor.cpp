@@ -13,21 +13,6 @@ FlatPatch PatchDescriptor::Flatten() const
    return {};
 }
 
-void PatchDescriptor::AddValidationData(
-   const size_t address,
-   const DataBuffer& data)
-{
-   AddValidationData(address, DataBuffer(data));
-}
-
-void PatchDescriptor::AddValidationData(
-   const size_t address,
-   DataBuffer&& data) noexcept
-{
-   m_validationData.address = address;
-   m_validationData.data = std::move(data);
-}
-
 bool PatchDescriptor::AddPatchData(
    const size_t address,
    const DataBuffer& data)
@@ -47,16 +32,66 @@ bool PatchDescriptor::AddPatchData(
    return inserted;
 }
 
-const PatchDescriptor::ValidationData&
-PatchDescriptor::GetValidationData() const noexcept
+void PatchDescriptor::SetFullPatch(FullPatch&& patch) noexcept
 {
-   return m_validationData;
+   m_fullPatch = std::move(patch);
+}
+
+void PatchDescriptor::AddValidationData(
+   const size_t address,
+   const DataBuffer& data)
+{
+   AddValidationData(address, DataBuffer(data));
+}
+
+void PatchDescriptor::AddValidationData(
+   const size_t address,
+   DataBuffer&& data) noexcept
+{
+   m_validationData.address = address;
+   m_validationData.data = std::move(data);
+}
+
+void PatchDescriptor::AddFileId(std::string_view info)
+{
+   AddFileId(std::string(info));
+}
+
+void PatchDescriptor::AddFileId(std::string&& info)
+{
+   m_fileId = std::move(info);
+}
+
+void PatchDescriptor::AddDescription(std::string_view description)
+{
+   AddDescription(std::string(description));
+}
+
+void PatchDescriptor::AddDescription(std::string&& description)
+{
+   m_description = std::move(description);
 }
 
 const PatchDescriptor::FullPatch&
 PatchDescriptor::GetFullPatch() const noexcept
 {
    return m_fullPatch;
+}
+
+const PatchDescriptor::ValidationData&
+PatchDescriptor::GetValidationData() const noexcept
+{
+   return m_validationData;
+}
+
+const std::string& PatchDescriptor::GetFileId() const noexcept
+{
+   return m_fileId;
+}
+
+const std::string& PatchDescriptor::GetDescription() const noexcept
+{
+   return m_description;
 }
 
 }

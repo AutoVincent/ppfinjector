@@ -15,6 +15,7 @@
     <ClInclude Include="inc\ppftk\rom_patch\patch_descriptor.h" />
     <ClInclude Include="inc\ppftk\rom_patch\patch_item.h" />
     <ClInclude Include="inc\ppftk\rom_patch\ppf\parser.h" />
+    <ClInclude Include="inc\ppftk\rom_patch\ppf\ppf3.h" />
     <ClInclude Include="src\rom_patch\ppf\schema.h" />
     <ClInclude Include="src\rom_patch\ppf\v3.h" />
   </ItemGroup>
@@ -22,6 +23,7 @@
     <ClCompile Include="src\rom_patch\flat_patch.cpp" />
     <ClCompile Include="src\rom_patch\patch_descriptor.cpp" />
     <ClCompile Include="src\rom_patch\ppf\parser.cpp" />
+    <ClCompile Include="src\rom_patch\ppf\ppf3.cpp" />
     <ClCompile Include="src\rom_patch\ppf\v3.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
