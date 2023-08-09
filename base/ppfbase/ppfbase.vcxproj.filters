@@ -101,6 +101,15 @@
     <ClInclude Include="inc\ppfbase\process\this_module.h">
       <Filter>PublicHeaders\process</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ppfbase\stdext\iostream.h">
+      <Filter>PublicHeaders\stdext</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppfbase\stdext\poor_mans_expected.h">
+      <Filter>PublicHeaders\stdext</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppfbase\stdext\system_error.h">
+      <Filter>PublicHeaders\stdext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\process\this_process.cpp">

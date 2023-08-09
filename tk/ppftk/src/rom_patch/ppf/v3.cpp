@@ -2,120 +2,73 @@
 
 #include "schema.h"
 
+#include <ppftk/rom_patch/ppf/ppf3.h>
+
 #include <ppfbase/logging/logging.h>
+#include <ppfbase/stdext/iostream.h>
+#include <ppfbase/stdext/poor_mans_expected.h>
+#include <ppfbase/stdext/string.h>
 
 #include <array>
 #include <istream>
 
+#include <Windows.h>
 
 namespace tdd::tk::rompatch::details::ppf::V3 {
 
 namespace {
-
-#pragma pack(push, 1)
-   struct [[nodiscard]] Header
+   stdext::pm_expected<std::string> GetFileId(std::istream& ppf)
    {
-      char magic[5];
-      schema::Encoding encoding;
-      char description[50];
-      schema::TargetImageType imageType;
-      bool validateImage;
-      bool hasUndoData;
-      bool dummy;
-   };
-   static_assert(sizeof(Header) == 60);
+      namespace fileid = schema::fileid;
 
-   struct [[nodiscard]] PatchEntry
-   {
-      uint64_t address;
-      uint8_t length;
-      char data[1];
-   };
+      ppf.seekg(0, std::istream::end);
+      const size_t fileSize = ppf.tellg();
 
-   static constexpr auto kPatchEntryHeaderSize = sizeof(uint64_t) + sizeof(uint8_t);
+      // Try to find the end tag first to see if we have any file id data.
+      ppf.seekg(fileid::kEndPos, std::istream::end);
 
-#pragma pack(pop)
+      std::string endMagic(fileid::kEndLength, '\0');
+      stdext::Read(ppf, endMagic);
 
-   // Present after the Header if 'validateImage' is true.
-   static constexpr size_t kValidataionDataLength = 1024;
-   static constexpr size_t kAnyImageValidationAddress = 0x9320;
-   static constexpr size_t kPrimoDvdValidationAddress = 0x80A0;
-
-
-   template <
-      typename T,
-      std::enable_if_t<std::is_trivial_v<T>, void*> = nullptr>
-   void Read(std::istream& ppf, T& value)
-   {
-      ppf.read(reinterpret_cast<char*>(&value), sizeof(T));
-   }
-
-   template <typename ContainerT,
-      std::enable_if_t<!std::is_trivial_v<ContainerT>, void*> = nullptr>
-   void Read(std::istream& ppf, ContainerT& value)
-   {
-      ppf.read(reinterpret_cast<char*>(value.data()), value.size());
-   }
-
-   std::optional<size_t> GetFileIdLength(std::istream& ppf)
-   {
-      // If the patch has a FILE_ID.DIZ, its length is the last two bytes of the
-      // file. 'FILE_ID.DIZ' magic string immediately precedes these two bytes.
-      static constexpr int kFileIdLengthLength = 2;
-      static constexpr auto kFileIdBegin = "@BEGIN_FILE_ID.DIZ";
-      static constexpr auto kFileIdBeginLength =
-         std::char_traits<char>::length(kFileIdBegin);
-      static constexpr auto kFileIdEnd = "@END_FILE_ID.DIZ";
-      static constexpr auto kFileIdEndLength =
-         std::char_traits<char>::length(kFileIdEnd);
-      static constexpr size_t kFileIdMaxLength = 3072;
-
-      static constexpr int kFileIdEndPos = 
-         -static_cast<int>(kFileIdLengthLength + kFileIdEndLength);
-
-      static constexpr size_t kTotalPadding =
-         kFileIdLengthLength + kFileIdBeginLength + kFileIdEndLength;
-
-      ppf.seekg(kFileIdEndPos, std::istream::end);
-
-      std::string endMagic(kFileIdEndLength, '\0');
-      Read(ppf, endMagic);
-
-      if (endMagic != kFileIdEnd) {
-         return 0;
+      if (endMagic != fileid::kEnd) {
+         return stdext::make_win32_ec(ERROR_NOT_FOUND);
       }
 
       int16_t idDataLength = 0;
-      Read(ppf, idDataLength);
-      if (idDataLength < 0 || idDataLength > kFileIdMaxLength) {
+      stdext::Read(ppf, idDataLength);
+      
+      const auto idLength = idDataLength + fileid::kTotalPadding;
+
+      if (idDataLength < 0
+       || idDataLength > fileid::kDataMaxLength
+       || idLength > fileSize) {
          TDD_LOG_WARN() << "Invalid FileId length: " << idDataLength;
-         return std::nullopt;
+         return stdext::make_win32_ec(ERROR_INVALID_PARAMETER);
       }
 
-      const auto idLength = idDataLength + kTotalPadding;
       int idBeginOffset = -static_cast<int>(idLength);
 
       ppf.seekg(idBeginOffset, std::istream::end);
 
-      std::string beginMagic(kFileIdBeginLength, '\0');
-      Read(ppf, beginMagic);
+      std::string beginMagic(fileid::kBeginLength, '\0');
+      stdext::Read(ppf, beginMagic);
 
-      if (beginMagic != kFileIdBegin) {
-         TDD_LOG_WARN() << "[" << kFileIdBegin << "] not found";
-         return std::nullopt;
+      if (beginMagic != fileid::kBegin) {
+         TDD_LOG_WARN() << "[" << fileid::kBegin << "] not found";
+         return stdext::make_win32_ec(ERROR_INVALID_PARAMETER);
       }
-      return idLength;
+
+      std::string fileId(idDataLength, '\0');
+      stdext::Read(ppf, fileId);
+      return fileId;
    }
 
-   std::optional<size_t> DataLength(std::istream& ppf)
+   [[nodiscard]] size_t DataLength(
+      std::istream& ppf,
+      const size_t fileIdLength)
    {
-      const auto fileIdLength = GetFileIdLength(ppf);
-      if (!fileIdLength.has_value()) {
-         return std::nullopt;
-      }
-
       ppf.seekg(0, std::istream::end);
-      return static_cast<size_t>(ppf.tellg()) - fileIdLength.value();
+      return static_cast<size_t>(ppf.tellg()) - fileIdLength;
    }
 
    bool ParsePatchData(
@@ -144,14 +97,14 @@ namespace {
          while(true) {
             const auto unreadBlock = static_cast<size_t>(
                std::distance(it, patchBlock.cend()));
-            if (unreadBlock < kPatchEntryHeaderSize) {
+            if (unreadBlock < schema::kPatchEntryHeaderSize) {
                // End of current block. Get ready to read the next block
                break;
             }
-            const auto entry = reinterpret_cast<const PatchEntry*>(&(*it));
+            const auto entry = reinterpret_cast<const schema::PatchEntry*>(&(*it));
 
             const auto entrySize =
-               kPatchEntryHeaderSize + entry->length * payloadMultiplier;
+               schema::kPatchEntryHeaderSize + entry->length * payloadMultiplier;
 
             if (unreadBlock < entrySize) {
                break;
@@ -185,39 +138,58 @@ namespace {
 
 std::optional<PatchDescriptor> Parse(std::istream& ppf)
 {
-   const auto dataLengthOpt = DataLength(ppf);
-   if (!dataLengthOpt.has_value()) {
-      return std::nullopt;
-   }
-
-   if (dataLengthOpt.value() < sizeof(Header)) {
-      TDD_LOG_WARN() << "File too small: " << dataLengthOpt.value();
-      return std::nullopt;
-   }
+   auto fileIdExpected = GetFileId(ppf);
 
    PatchDescriptor patch;
+   if (fileIdExpected.has_value()) {
+      patch.AddFileId(std::move(fileIdExpected).value());
+   }
+   else {
+      const auto ec = fileIdExpected.handle_error(
+         [](const std::error_code ec) {
+            if (ec.value() != ERROR_NOT_FOUND) {
+               return ec;
+            }
+            return std::error_code{};
+         });
+
+      if (ec) {
+         return std::nullopt;
+      }
+   }
+
+   const auto dataLength = DataLength(ppf, patch.GetFileId().length());
+
+   if (dataLength < sizeof(schema::Header)) {
+      TDD_LOG_WARN() << "File too small: " << dataLength;
+      return std::nullopt;
+   }
 
    ppf.seekg(0);
-   Header hdr{0};
-   Read(ppf, hdr);
+   schema::Header hdr{0};
+   stdext::Read(ppf, hdr);
 
-   size_t remainingData = dataLengthOpt.value() - sizeof(hdr);
+   std::string description(hdr.description, sizeof(hdr.description));
+   stdext::StripTrailingNulls(description);
+   patch.AddDescription(std::move(description));
+
+   size_t remainingData = dataLength - sizeof(hdr);
 
    if (hdr.validateImage) {
-      if (remainingData < kValidataionDataLength) {
+      if (remainingData < schema::kValidataionDataLength) {
          TDD_LOG_WARN() << "Not enough validation data: " << remainingData;
          return std::nullopt;
       }
 
       const auto validationAddress =
          hdr.imageType == schema::TargetImageType::PrimoDvd
-            ? kPrimoDvdValidationAddress
-            : kAnyImageValidationAddress;
+            ? schema::kPrimoDvdValidationAddress
+            : schema::kAnyImageValidationAddress;
 
-      DataBuffer data(kValidataionDataLength);
-      Read(ppf, data);
+      DataBuffer data(schema::kValidataionDataLength);
+      stdext::Read(ppf, data);
       patch.AddValidationData(validationAddress, std::move(data));
-      remainingData -= kValidataionDataLength;
+      remainingData -= schema::kValidataionDataLength;
    }
 
    if (!ParsePatchData(ppf, hdr.hasUndoData, remainingData, patch)) {

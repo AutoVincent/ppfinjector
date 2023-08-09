@@ -41,6 +41,9 @@
     <ClInclude Include="src\rom_patch\ppf\schema.h">
       <Filter>Source\rom_patch\ppf</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ppftk\rom_patch\ppf\ppf3.h">
+      <Filter>PublicHeaders\rom_patch\ppf</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\rom_patch\flat_patch.cpp">
@@ -53,6 +56,9 @@
       <Filter>Source\rom_patch\ppf</Filter>
     </ClCompile>
     <ClCompile Include="src\rom_patch\ppf\v3.cpp">
+      <Filter>Source\rom_patch\ppf</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rom_patch\ppf\ppf3.cpp">
       <Filter>Source\rom_patch\ppf</Filter>
     </ClCompile>
   </ItemGroup>

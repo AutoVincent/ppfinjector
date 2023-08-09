@@ -5,6 +5,7 @@
 #include <ppfbase/preprocessor_utils.h>
 
 #include <set>
+#include <string>
 #include <vector>
 
 namespace tdd::tk::rompatch {
@@ -21,14 +22,6 @@ namespace tdd::tk::rompatch {
 
       FlatPatch Flatten() const;
 
-      void AddValidationData(
-         const size_t address,
-         const DataBuffer& data);
-
-      void AddValidationData(
-         const size_t address,
-         DataBuffer&& data) noexcept;
-
       [[nodiscard]] bool AddPatchData(
          const size_t address,
          const DataBuffer& data);
@@ -37,12 +30,32 @@ namespace tdd::tk::rompatch {
          const size_t address,
          DataBuffer&& data);
 
+      void SetFullPatch(FullPatch&& patch) noexcept;
+
+      void AddValidationData(
+         const size_t address,
+         const DataBuffer& data);
+
+      void AddValidationData(
+         const size_t address,
+         DataBuffer&& data) noexcept;
+
+      void AddFileId(std::string_view id);
+      void AddFileId(std::string&& id);
+
+      void AddDescription(std::string_view description);
+      void AddDescription(std::string&& description);
+
       [[nodiscard]] const ValidationData& GetValidationData() const noexcept;
       [[nodiscard]] const FullPatch& GetFullPatch() const noexcept;
+      [[nodiscard]] const std::string& GetFileId() const noexcept;
+      [[nodiscard]] const std::string& GetDescription() const noexcept;
 
    private:
-      ValidationData m_validationData;
       FullPatch m_fullPatch;
+      ValidationData m_validationData;
+      std::string m_description;
+      std::string m_fileId;
    };
 
 }
