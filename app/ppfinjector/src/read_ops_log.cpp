@@ -1,5 +1,6 @@
 #include "read_ops_log.h"
 
+#include <ppfbase/filesystem/file.h>
 #include <ppfbase/filesystem/path_service.h>
 #include <ppfbase/logging/logging.h>
 #include <ppfbase/process/this_process.h>
@@ -9,31 +10,6 @@
 #include <Windows.h>
 
 namespace tdd::app::ppfinjector {
-
-namespace {
-
-   std::optional<int64_t> GetFilePointer(const HANDLE hFile)
-   {
-      static constexpr LARGE_INTEGER kDontMoveFilePointer{ 0 };
-
-      LARGE_INTEGER location{ 0 };
-      const auto success = SetFilePointerEx(
-         hFile,
-         kDontMoveFilePointer,
-         &location,
-         FILE_CURRENT);
-
-      if (success) {
-         return location.QuadPart;
-      }
-
-      const auto err = GetLastError();
-      TDD_LOG_WARN() << "Unable to get current file pointer location: "
-         << std::error_code(err, std::system_category());
-      return std::nullopt;
-   }
-
-}
 
 ReadOpsLog::ReadOpsLog(HANDLE hFile, const std::filesystem::path& targetFile)
    : m_hFile(hFile)
@@ -67,7 +43,7 @@ void ReadOpsLog::Log(const size_t dataLength)
       return;
    }
 
-   const auto filePtr = GetFilePointer(m_hFile);
+   const auto filePtr = base::fs::File::GetFilePointer(m_hFile);
 
    m_log <<::GetCurrentThreadId() << ":";
    if (filePtr.has_value()) {

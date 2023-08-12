@@ -1,7 +1,10 @@
 #include "hook_status.h"
 #include "read_ops_log.h"
 
+#include <ppftk/rom_patch/flat_patch.h>
+#include <ppftk/rom_patch/ppf/parser.h>
 #include <ppfbase/logging/logging.h>
+#include <ppfbase/filesystem/file.h>
 
 #include <atomic>
 #include <filesystem>
@@ -12,8 +15,11 @@
 #include <Windows.h>
 
 #include <detours/detours.h>
+
 namespace tdd::app::ppfinjector {
 namespace {
+
+   namespace fs = std::filesystem;
 
    auto g_origCreateFileW = CreateFileW;
    auto g_origReadFile = ReadFile;
@@ -21,6 +27,8 @@ namespace {
    auto g_origCloseHandle = CloseHandle;
 
    std::unique_ptr<ReadOpsLog> g_readOpsLog;
+   tk::rompatch::FlatPatch g_patch;
+   std::atomic<HANDLE> g_targetFile = INVALID_HANDLE_VALUE;
 
    struct [[nodiscard]] LastErrorRestorer
    {
@@ -39,7 +47,15 @@ namespace {
       TDD_DISABLE_COPY_MOVE(LastErrorRestorer);
    };
 
-   std::atomic<HANDLE> g_targetFile = INVALID_HANDLE_VALUE;
+   [[nodiscard]] bool IsWindowsFile(const fs::path& file)
+   {
+      static const fs::path kWindows(L"C:\\Windows\\");
+
+      const auto [winEnd, nothing] =
+         std::mismatch(kWindows.begin(), kWindows.end(), file.begin());
+      return kWindows.end() == winEnd;
+   }
+
 
    HANDLE WINAPI CreateFileWHook(
       _In_ LPCWSTR lpFileName,
@@ -50,6 +66,8 @@ namespace {
       _In_ DWORD dwFlagsAndAttributes,
       _In_opt_ HANDLE hTemplateFile)
    {
+      static constexpr auto kPpfExt = L".ppf";
+
       static constexpr auto kTarget =
          L"Castlevania - Symphony of the Night (USA) (Track 1).bin";
       
@@ -74,20 +92,44 @@ namespace {
       LastErrorRestorer lastErr;
       TDD_PPF_DISABLE_FURTHER_HOOKS();
 
-      TDD_LOG_DEBUG() << "Opened: " << lpFileName;
+      fs::path target;
+      try {
+         target = fs::canonical(lpFileName);
+      }
+      catch (const std::exception& e) {
+         TDD_LOG_DEBUG() << "Target [" << lpFileName
+            << "] can't be canonicalized: " << e.what();
+         return hFile;
+      }
 
-      const std::filesystem::path openedFile(lpFileName);
-      if (openedFile.filename() != kTarget) {
+      TDD_LOG_DEBUG() << "Opened: " << lpFileName;
+      if (IsWindowsFile(target)) {
+         return hFile;
+      }
+
+      target.replace_extension(kPpfExt);
+      if (!fs::exists(target)) {
          return hFile;
       }
 
       TDD_LOG_INFO() << "Target: " << lpFileName;
+      TDD_LOG_INFO() << "Patch: " << target.wstring();
+
       if (g_targetFile != INVALID_HANDLE_VALUE) {
          TDD_LOG_WARN() << "Already opened before. Replacing with new handle.";
       }
 
       g_targetFile = hFile;
-      g_readOpsLog = std::make_unique<ReadOpsLog>(hFile, openedFile);
+      g_readOpsLog = std::make_unique<ReadOpsLog>(hFile, lpFileName);
+
+      const auto patch = tk::rompatch::ppf::Parse(target);
+      if (!patch.has_value()) {
+         TDD_LOG_WARN() << "Unable to parse patch";
+         return hFile;
+      }
+
+      g_patch = patch->Flatten();
+
       return hFile;
    }
 
@@ -102,7 +144,8 @@ namespace {
       const bool skipHook = !HookStatus::ShouldExecute()
          || hFile == NULL
          || hFile == INVALID_HANDLE_VALUE
-         || hFile != g_targetFile;
+         || hFile != g_targetFile
+         || g_patch.empty();
 
       if (skipHook) {
          return g_origReadFile(
@@ -121,8 +164,13 @@ namespace {
       if (nullptr != lpOverlapped) {
          TDD_LOG_WARN() << "Overlapped IO used to read target";
       }
-
+      const auto targetAddr = base::fs::File::GetFilePointer(hFile);
       // 2. ReadFile
+      DWORD bytesRead = 0;
+
+      if (nullptr == lpNumberOfBytesRead) {
+         lpNumberOfBytesRead = &bytesRead;
+      }
 
       const auto success = g_origReadFile(
          hFile,
@@ -134,6 +182,15 @@ namespace {
       LastErrorRestorer lastErr;
 
       // 3. Apply patch
+      if (targetAddr.has_value()) {
+         g_patch.Patch(
+            targetAddr.value(),
+            *lpNumberOfBytesRead,
+            static_cast<char*>(lpBuffer));
+      }
+      else {
+         TDD_LOG_WARN() << "Unable to get file pointer location for read";
+      }
 
       return success;
    }

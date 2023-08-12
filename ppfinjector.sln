@@ -25,6 +25,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "emulauncher", "app\emulaunc
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "patchtester", "app\patchtester\patchtester.vcxproj", "{69703376-A12E-4EA1-8355-F8378DBF8146}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E5EB2B94-4E44-4F3F-97BF-4025227C8239} = {E5EB2B94-4E44-4F3F-97BF-4025227C8239}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
