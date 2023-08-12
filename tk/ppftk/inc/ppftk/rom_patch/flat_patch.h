@@ -69,14 +69,21 @@ namespace tdd::tk::rompatch {
          FlattenedPatches::const_iterator m_pos;
       };
 
+      TDD_DEFAULT_CTOR_DTOR(FlatPatch);
+
       FlatPatch(const PatchDescriptor descriptor);
 
-      TDD_DEFAULT_ALL_SPECIAL_MEMBERS(FlatPatch);
+      FlatPatch(const FlatPatch& other);
+      FlatPatch& operator=(const FlatPatch& other) noexcept;
+
+      FlatPatch(FlatPatch&& other);
+      FlatPatch& operator=(FlatPatch&& other) noexcept;
 
       using iterator = Iterator;
 
       iterator begin() const noexcept;
       iterator end() const noexcept;
+      [[nodiscard]] bool empty() const noexcept;
 
       void Patch(
          const uint64_t addr,

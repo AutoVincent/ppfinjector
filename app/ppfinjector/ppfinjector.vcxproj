@@ -83,6 +83,9 @@
     <ProjectReference Include="..\..\deps\detours\detours.vcxproj">
       <Project>{3b717b2a-edb5-42a0-ade7-c361629ffe22}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\tk\ppftk\ppftk.vcxproj">
+      <Project>{5561b3c1-3815-4992-9848-dcc234db7539}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\hook_status.cpp" />

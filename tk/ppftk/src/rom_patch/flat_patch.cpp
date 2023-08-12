@@ -19,14 +19,6 @@ namespace {
       return kHeaderSize + patchSize;
    }
 
-   [[nodiscard]] ptrdiff_t GetPreviousBlockOffset(
-      FlatPatch::PatchBlock const* block)
-   {
-      TDD_ASSERT(0 == block->previousBlockOffset % sizeof(uint64_t));
-
-      return -static_cast<ptrdiff_t>(block->previousBlockOffset / sizeof(uint64_t));
-   }
-
    [[nodiscard]] size_t GetFlattenedSize(const PatchItem& patch)
    {
       const size_t dataLength =
@@ -74,10 +66,10 @@ FlatPatch::Iterator& FlatPatch::Iterator::operator--() noexcept
       return *this;
    }
 
-   const auto offset = GetPreviousBlockOffset(this->operator->());
+   const difference_type offset = (*this)->previousBlockOffset;
    TDD_ASSERT(std::distance(m_pos, m_parent->m_patch.begin()) <= offset);
 
-   std::advance(m_pos, offset);
+   std::advance(m_pos, -offset);
    return *this;
 }
 
@@ -138,6 +130,49 @@ FlatPatch::FlatPatch(const PatchDescriptor descriptor)
    m_back = Iterator(this, m_patch.end() - previousBlockOffset);
 }
 
+FlatPatch::FlatPatch(const FlatPatch& other)
+   : FlatPatch()
+{
+   *this = other;
+}
+
+FlatPatch& FlatPatch::operator=(const FlatPatch& other) noexcept
+{
+   if (this == &other) {
+      return *this;
+   }
+
+   m_validationData = other.m_validationData;
+   m_patch = other.m_patch;
+   const auto lastBlockSize = GetBlockSize(other.m_back.operator->());
+   m_back = Iterator(this, m_patch.end() - lastBlockSize);
+   m_lastRead = begin();
+   std::advance(m_lastRead, std::distance(other.begin(), other.m_lastRead));
+
+   return *this;
+}
+
+FlatPatch::FlatPatch(FlatPatch&& other)
+   : FlatPatch()
+{
+   *this = std::move(other);
+}
+
+FlatPatch& FlatPatch::operator=(FlatPatch&& other) noexcept
+{
+   if (this == &other) {
+      return *this;
+   }
+
+   m_validationData = std::move(other.m_validationData);
+   m_patch = std::move(other.m_patch);
+   m_back = other.m_back;
+   m_back.m_parent = this;
+   m_lastRead = other.m_lastRead;
+   m_lastRead.m_parent = this;
+   return *this;
+}
+
 FlatPatch::iterator FlatPatch::begin() const noexcept
 {
    return Iterator(this, m_patch.begin());
@@ -146,6 +181,11 @@ FlatPatch::iterator FlatPatch::begin() const noexcept
 FlatPatch::iterator FlatPatch::end() const noexcept
 {
    return Iterator(this, m_patch.end());
+}
+
+bool FlatPatch::empty() const noexcept
+{
+   return m_patch.empty();
 }
 
 void FlatPatch::Patch(
@@ -164,32 +204,38 @@ void FlatPatch::Patch(
          return;
       }
    }
-   else if (addr > m_lastRead->address) {
+   else if (m_lastRead->address < addr) {
       if (!SeekForward(addr, endAddr)) {
          return;
       }
    }
 
    // patch data
-   if (m_lastRead->address < addr) {
-      // Target buffer starts in the middle of a patch.
-      const auto offset = m_lastRead->address - addr;
-      memcpy_s(
-         buffer,
-         size,
-         reinterpret_cast<const uint8_t*>(m_lastRead->patch) + offset,
-         m_lastRead->patchLength - offset);
-      ++m_lastRead;
-   }
-
    while (m_lastRead != end() && m_lastRead->address < endAddr) {
-      const auto offset = m_lastRead->address - addr;
-      const auto availableBufferSize = size - offset;
-      memcpy_s(
-         buffer + offset,
-         availableBufferSize,
-         m_lastRead->patch,
-         m_lastRead->patchLength);
+      const auto& patch = *m_lastRead;
+
+      TDD_ASSERT(patch.address + patch.patchLength >= addr);
+
+      if (patch.address <= addr) {
+         // Target start in the middle of patch
+         const size_t skip = addr - patch.address;
+         const auto copySize = std::min(size, patch.patchLength - skip);
+         memcpy_s(
+            buffer,
+            copySize,
+            reinterpret_cast<const char*>(patch.patch) + skip,
+            copySize);
+      }
+      else {
+         const auto offset = patch.address - addr;
+         const auto availableBufferSize = size - offset;
+         const auto copySize = std::min(availableBufferSize, patch.patchLength);
+         memcpy_s(
+            buffer + offset,
+            copySize,
+            patch.patch,
+            copySize);
+      }
 
       ++m_lastRead;
    }
@@ -216,18 +262,28 @@ bool FlatPatch::SeekForward(
    const uint64_t targetAddrBegin,
    const uint64_t targetAddrEnd) const
 {
+   // targetAddrBegin is later than m_lastRead->address
+
    while (m_lastRead != end()) {
-      if (m_lastRead->address >= targetAddrEnd) {
-         return false;
+      const auto patchEnd = m_lastRead->address + m_lastRead->patchLength;
+
+      if (m_lastRead->address <= targetAddrBegin) {
+         if (targetAddrBegin < patchEnd) {
+            // overlaps the beginning region of the target range.
+            return true;
+         }
+      }
+      else if (targetAddrBegin < m_lastRead->address) {
+         if (m_lastRead->address < targetAddrEnd) {
+            // This block starts in the middle of the target region.
+            return true;
+         }
+         else {
+            // Start of this block is after the target region.
+            return false;
+         }
       }
 
-      if (m_lastRead->address + m_lastRead->patchLength > targetAddrBegin) {
-         return true;
-      }
-
-      if (targetAddrEnd > m_lastRead->address) {
-         return true;
-      }
       ++m_lastRead;
    }
 

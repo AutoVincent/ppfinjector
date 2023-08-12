@@ -196,6 +196,7 @@ std::optional<PatchDescriptor> Parse(std::istream& ppf)
       return std::nullopt;
    }
 
+   patch.Compact();
    return patch;
 }
 

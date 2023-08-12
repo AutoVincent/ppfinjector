@@ -110,6 +110,9 @@
     <ClInclude Include="inc\ppfbase\stdext\system_error.h">
       <Filter>PublicHeaders\stdext</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ppfbase\filesystem\file.h">
+      <Filter>PublicHeaders\filesystem</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\process\this_process.cpp">
@@ -147,6 +150,9 @@
     </ClCompile>
     <ClCompile Include="src\process\this_module.cpp">
       <Filter>Source\process</Filter>
+    </ClCompile>
+    <ClCompile Include="src\filesystem\file.cpp">
+      <Filter>Source\filesystem</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
