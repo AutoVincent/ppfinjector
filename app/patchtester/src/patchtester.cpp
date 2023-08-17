@@ -12,61 +12,6 @@
 
 #include <Windows.h>
 
-namespace tdd::app::patchtester {
-   void TestInjector()
-   {
-      static constexpr size_t kBufferSize = 20480;
-
-      static const std::filesystem::path targetFile(
-         "C:\\dev\\ppfinjector\\app\\patchtester\\data\\SotN-Randomizer (1691056147921).bin");
-
-      static const std::filesystem::path verificationFile(
-         "C:\\dev\\ppfinjector\\app\\patchtester\\data\\verification.bin");
-
-
-      auto& launcher = base::process::ThisProcess::ImagePath();
-      const auto injectorPath =
-         (launcher.parent_path() / TDD_PPF_INJECTOR_DLL_W).wstring();
-
-      const auto hInjector = ::LoadLibraryW(injectorPath.c_str());
-      if (NULL == hInjector) {
-         std::cout << "Unable to load injector." << std::endl;
-         return;
-      }
-
-      std::ifstream target(targetFile, std::ios::binary);
-      std::ifstream verification(verificationFile, std::ios::binary);
-
-      std::vector<char> tBuf(kBufferSize);
-      std::vector<char> vBuf(kBufferSize);
-
-      verification.seekg(0, std::ios::end);
-      size_t read = 0;
-      size_t left = verification.tellg();
-      verification.seekg(0, std::ios::beg);
-      while (left > 0) {
-         if (left < kBufferSize) {
-            tBuf.resize(left);
-            vBuf.resize(left);
-         }
-
-         stdext::Read(target, tBuf);
-         stdext::Read(verification, vBuf);
-
-         if (tBuf != vBuf) {
-            std::cout << "Mismatch at " << read << std::endl;
-            return;
-         }
-         read += tBuf.size();
-         left -= tBuf.size();
-      }
-
-      std::cout << "Identical data read. Patch injector is working"
-         << std::endl;
-
-   }
-}
-
 int main()
 {
    tdd::base::logging::InitSingleProcessLog();
@@ -129,8 +74,6 @@ int main()
       }
    }
 
-
-   tdd::app::patchtester::TestInjector();
 
    return 0;
 }

@@ -73,6 +73,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\cmds\cli.cpp" />
+    <ClCompile Include="src\cmds\test\live_patch.cpp" />
+    <ClCompile Include="src\cmds\test\test_cmds.cpp" />
     <ClCompile Include="src\emulauncher.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -82,6 +85,12 @@
     <ProjectReference Include="..\..\deps\detours\detours\detours.vcxproj">
       <Project>{3b717b2a-edb5-42a0-ade7-c361629ffe22}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\cmds\cli.h" />
+    <ClInclude Include="src\cmds\sub_cmd.h" />
+    <ClInclude Include="src\cmds\handlers.h" />
+    <ClInclude Include="src\cmds\test\live_patch.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
