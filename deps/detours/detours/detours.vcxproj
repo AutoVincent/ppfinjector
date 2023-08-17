@@ -13,20 +13,19 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{e5eb2b94-4e44-4f3f-97bf-4025227c8239}</ProjectGuid>
-    <RootNamespace>ppfinjector</RootNamespace>
+    <ProjectGuid>{3b717b2a-edb5-42a0-ade7-c361629ffe22}</ProjectGuid>
+    <RootNamespace>detours</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <UseDebugLibraries>false</UseDebugLibraries>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
@@ -38,15 +37,13 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\props\core.props" />
-    <Import Project="..\..\props\debug.props" />
-    <Import Project="..\..\props\app.props" />
+    <Import Project="..\..\..\props\core.props" />
+    <Import Project="..\..\..\props\debug.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
-    <Import Project="..\..\props\core.props" />
-    <Import Project="..\..\props\release.props" />
-    <Import Project="..\..\props\app.props" />
+    <Import Project="..\..\..\props\core.props" />
+    <Import Project="..\..\..\props\release.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -58,9 +55,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
     <Link>
-      <SubSystem>Windows</SubSystem>
-      <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>$(ProjectDir)res\ppfinjector.def</ModuleDefinitionFile>
+      <SubSystem>
+      </SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -69,35 +66,35 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>
+      </SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>$(ProjectDir)res\ppfinjector.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\base\ppfbase\ppfbase.vcxproj">
-      <Project>{2662f98e-e55c-4666-9790-b399a7985ca0}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\deps\detours\detours\detours.vcxproj">
-      <Project>{3b717b2a-edb5-42a0-ade7-c361629ffe22}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\tk\ppftk\ppftk.vcxproj">
-      <Project>{5561b3c1-3815-4992-9848-dcc234db7539}</Project>
-    </ProjectReference>
+    <ClCompile Include="creatwth.cpp" />
+    <ClCompile Include="detours.cpp" />
+    <ClCompile Include="disasm.cpp" />
+    <ClCompile Include="disolarm.cpp" />
+    <ClCompile Include="disolarm64.cpp" />
+    <ClCompile Include="disolia64.cpp" />
+    <ClCompile Include="disolx64.cpp" />
+    <ClCompile Include="disolx86.cpp" />
+    <ClCompile Include="image.cpp" />
+    <ClCompile Include="modules.cpp" />
+    <ClCompile Include="uimports.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\hook_status.cpp" />
-    <ClCompile Include="src\ppfinjector.cpp" />
-    <ClCompile Include="src\read_ops_log.cpp" />
+    <ClInclude Include="detours.h" />
+    <ClInclude Include="detver.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\ppfinjector.def" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\hook_status.h" />
-    <ClInclude Include="src\read_ops_log.h" />
+    <None Include="LICENSE.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

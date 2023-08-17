@@ -6,7 +6,8 @@
     <PpfDeps>$(SolutionDir)deps</PpfDeps>
   </PropertyGroup>
   <PropertyGroup>
-    <IncludePath>$(PpfBase)\ppfbase\inc;$(PpfDeps);$(IncludePath)</IncludePath>
+    <IncludePath>$(PpfBase)\ppfbase\inc;$(IncludePath)</IncludePath>
+    <ExternalIncludePath>$(PpfDeps)\detours;$(PpfDeps)\jsoncpp;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup>
