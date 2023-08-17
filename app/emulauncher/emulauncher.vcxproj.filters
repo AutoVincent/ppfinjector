@@ -9,10 +9,39 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Source\cmds">
+      <UniqueIdentifier>{ca3bd11a-687a-482f-8034-e30479a0c386}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\cmds\test">
+      <UniqueIdentifier>{1f423ac9-346f-49ce-9ef7-f4e35a9d1e2f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\emulauncher.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="src\cmds\cli.cpp">
+      <Filter>Source\cmds</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmds\test\test_cmds.cpp">
+      <Filter>Source\cmds\test</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmds\test\live_patch.cpp">
+      <Filter>Source\cmds\test</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\cmds\sub_cmd.h">
+      <Filter>Source\cmds</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cmds\cli.h">
+      <Filter>Source\cmds</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cmds\handlers.h">
+      <Filter>Source\cmds</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cmds\test\live_patch.h">
+      <Filter>Source\cmds\test</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

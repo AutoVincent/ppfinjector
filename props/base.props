@@ -7,7 +7,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <IncludePath>$(PpfBase)\ppfbase\inc;$(IncludePath)</IncludePath>
-    <ExternalIncludePath>$(PpfDeps)\detours;$(PpfDeps)\jsoncpp;$(ExternalIncludePath)</ExternalIncludePath>
+    <ExternalIncludePath>$(PpfDeps)\cli11;$(PpfDeps)\detours;$(PpfDeps)\gsl;$(PpfDeps)\jsoncpp;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup />
   <ItemGroup>

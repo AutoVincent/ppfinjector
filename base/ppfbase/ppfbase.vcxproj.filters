@@ -113,6 +113,9 @@
     <ClInclude Include="inc\ppfbase\filesystem\file.h">
       <Filter>PublicHeaders\filesystem</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ppfbase\stdext\scope_exit.h">
+      <Filter>PublicHeaders\stdext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\process\this_process.cpp">

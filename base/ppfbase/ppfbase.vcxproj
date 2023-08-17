@@ -27,6 +27,7 @@
     <ClInclude Include="inc\ppfbase\process\this_process.h" />
     <ClInclude Include="inc\ppfbase\stdext\iostream.h" />
     <ClInclude Include="inc\ppfbase\stdext\poor_mans_expected.h" />
+    <ClInclude Include="inc\ppfbase\stdext\scope_exit.h" />
     <ClInclude Include="inc\ppfbase\stdext\stream_operator.h" />
     <ClInclude Include="inc\ppfbase\stdext\string.h" />
     <ClInclude Include="inc\ppfbase\stdext\system_error.h" />

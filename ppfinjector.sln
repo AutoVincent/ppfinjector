@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.33920.266
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4-deps", "4-deps", "{6CC2A807-79F1-46D4-8CE2-5E04E979F3A4}"
+	ProjectSection(SolutionItems) = preProject
+		deps\Licenses.txt = deps\Licenses.txt
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1-apps", "1-apps", "{F172BD1C-A854-4F4D-89B7-44122FF54F5D}"
 EndProject

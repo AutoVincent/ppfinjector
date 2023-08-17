@@ -1,3 +1,5 @@
+#include "cmds/cli.h"
+
 #include <ppfbase/branding.h>
 #include <ppfbase/logging/logging.h>
 #include <ppfbase/process/this_process.h>
@@ -49,10 +51,13 @@ namespace tdd::app::emulauncher {
    }
 }
 
-//int main(int argc, char** argv)
-int main()
+int main(int argc, char** argv)
 {
    tdd::base::logging::InitSingleProcessLog();
+   if (argc > 1) {
+      return tdd::app::emulauncher::cmd::HandleCmdLine(argc, argv);
+   }
+
    TDD_LOG_INFO() << "EmuLauncher started";
    std::wstring bizhawk(MAX_PATH, L'\0');
 
