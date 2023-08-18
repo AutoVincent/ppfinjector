@@ -3,8 +3,12 @@
 
 #include <ppftk/rom_patch/flat_patch.h>
 #include <ppftk/rom_patch/ppf/parser.h>
+
+#include <ppfbase/branding.h>
 #include <ppfbase/logging/logging.h>
 #include <ppfbase/filesystem/file.h>
+#include <ppfbase/filesystem/path_service.h>
+#include <ppfbase/process/this_module.h>
 
 #include <atomic>
 #include <filesystem>
@@ -287,6 +291,20 @@ namespace {
       DetourTransactionCommit();
    }
 }
+
+void InitLog()
+{
+   const auto logDir = base::fs::PathService::DllLogDirectory();
+   if (!logDir.has_value()) {
+      base::logging::InitDllLog();
+   }
+   else {
+      auto sharedLog = logDir.value() / TDD_EMU_LAUNCHER_EXE_W;
+      sharedLog.replace_extension(L".log");
+      base::logging::InitDllLog(sharedLog);
+   }
+}
+
 }
 
 BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID)
@@ -298,7 +316,7 @@ BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID)
     switch (reason)
     {
     case DLL_PROCESS_ATTACH:
-       tdd::base::logging::InitDllLog();
+       tdd::app::ppfinjector::InitLog();
        tdd::app::ppfinjector::InstallHooks();
        break;
     case DLL_PROCESS_DETACH:

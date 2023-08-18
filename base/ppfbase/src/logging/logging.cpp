@@ -4,14 +4,19 @@
 
 namespace tdd::base::logging {
 
-   void InitSingleProcessLog()
+   void InitProcessLog(SharingMode mode)
    {
-      details::Logger::InitSingleProcessLog();
+      details::Logger::InitProcessLog(mode);
    }
 
-   void InitDllLog(SharingMode mode)
+   void InitDllLog()
    {
-      details::Logger::InitDllLog(mode);
+      details::Logger::InitDllLog();
+   }
+
+   void InitDllLog(const std::filesystem::path& sharedLog)
+   {
+      details::Logger::InitDllLog(sharedLog);
    }
 
    void SetMinLogLevel(Severity severity) noexcept

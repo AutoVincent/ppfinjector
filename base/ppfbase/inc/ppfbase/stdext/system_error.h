@@ -7,4 +7,6 @@ namespace tdd::stdext {
    {
       return std::error_code(err, std::system_category());
    }
+
+   [[nodiscard]] std::error_code make_last_error() noexcept;
 }

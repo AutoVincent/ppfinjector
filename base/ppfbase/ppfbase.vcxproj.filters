@@ -116,6 +116,12 @@
     <ClInclude Include="inc\ppfbase\stdext\scope_exit.h">
       <Filter>PublicHeaders\stdext</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ppfbase\stdext\mutex.h">
+      <Filter>PublicHeaders\stdext</Filter>
+    </ClInclude>
+    <ClInclude Include="src\logging\multi_process_log.h">
+      <Filter>Source\logging</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\process\this_process.cpp">
@@ -156,6 +162,12 @@
     </ClCompile>
     <ClCompile Include="src\filesystem\file.cpp">
       <Filter>Source\filesystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stdext\mutex.cpp">
+      <Filter>Source\stdext</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stdext\system_error.cpp">
+      <Filter>Source\stdext</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
