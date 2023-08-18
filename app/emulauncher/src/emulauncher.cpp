@@ -53,7 +53,9 @@ namespace tdd::app::emulauncher {
 
 int main(int argc, char** argv)
 {
-   tdd::base::logging::InitSingleProcessLog();
+   tdd::base::logging::InitProcessLog(
+      tdd::base::logging::SharingMode::MultiProcess);
+
    if (argc > 1) {
       return tdd::app::emulauncher::cmd::HandleCmdLine(argc, argv);
    }

@@ -5,11 +5,14 @@
 #include <ppfbase/logging/sharing_mode.h>
 #include <ppfbase/stdext/stream_operator.h>
 
+#include <filesystem>
+
 namespace tdd::base::logging {
 
-   void InitSingleProcessLog();
+   void InitProcessLog(SharingMode mode = SharingMode::MultiProcess);
 
-   void InitDllLog(SharingMode mode = SharingMode::SingleProcess);
+   void InitDllLog();
+   void InitDllLog(const std::filesystem::path& sharedLog);
 
    void SetMinLogLevel(Severity severity) noexcept;
    Severity GetMinLogLevel() noexcept;

@@ -1,5 +1,6 @@
 #include "logger.h"
 
+#include "multi_process_log.h"
 #include "single_process_log.h"
 
 #include <ppfbase/diagnostics/assert.h>
@@ -23,10 +24,11 @@ namespace {
    std::atomic<Severity> g_severity = Severity::Info;
    std::atomic<ILog*> g_log = nullptr;
 
+   template <typename LogT>
    void InitLog(const std::filesystem::path& logPath)
    {
       try {
-         g_log = std::make_unique<SingleProcessLog>(
+         g_log = std::make_unique<LogT>(
             logPath,
             kBytesPerFile,
             kFilesToKeep).release();
@@ -37,7 +39,7 @@ namespace {
    }
 }
 
-void InitSingleProcessLog()
+void InitProcessLog(SharingMode shareMode)
 {
    const auto logDir = fs::PathService::ProcessLogDirectory();
    if (!logDir.has_value()) {
@@ -48,12 +50,16 @@ void InitSingleProcessLog()
    const auto logFileName = process::ThisProcess::Name().stem() += ILog::kExt;
    const auto logPath = logDir.value() / logFileName;
 
-   InitLog(logPath);
+   if (shareMode == SharingMode::SingleProcess) {
+      InitLog<SingleProcessLog>(logPath);
+   }
+   else {
+      InitLog<MultiProcessLog>(logPath);
+   }
 }
 
-void InitDllLog(SharingMode shareMode)
+void InitDllLog()
 {
-   TDD_ASSERT(SharingMode::SingleProcess == shareMode);
    if (g_log != nullptr) {
       return;
    }
@@ -70,7 +76,19 @@ void InitDllLog(SharingMode shareMode)
       << ::GetCurrentProcessId() << ILog::kExt;
 
    const auto logPath = logDir.value() / logFileName.str();
-   InitLog(logPath);
+   InitLog<SingleProcessLog>(logPath);
+}
+
+void InitDllLog(const std::filesystem::path& sharedLog)
+{
+   const auto ec = fs::PathService::EnsureDirectoryExist(
+      sharedLog.parent_path());
+   if (ec) {
+      g_log = std::make_unique<NullLog>().release();
+      return;
+   }
+
+   InitLog<MultiProcessLog>(sharedLog);
 }
 
 void SetMinLogLevel(Severity severity) noexcept

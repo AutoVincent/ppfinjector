@@ -26,6 +26,7 @@
     <ClInclude Include="inc\ppfbase\process\this_module.h" />
     <ClInclude Include="inc\ppfbase\process\this_process.h" />
     <ClInclude Include="inc\ppfbase\stdext\iostream.h" />
+    <ClInclude Include="inc\ppfbase\stdext\mutex.h" />
     <ClInclude Include="inc\ppfbase\stdext\poor_mans_expected.h" />
     <ClInclude Include="inc\ppfbase\stdext\scope_exit.h" />
     <ClInclude Include="inc\ppfbase\stdext\stream_operator.h" />
@@ -33,6 +34,7 @@
     <ClInclude Include="inc\ppfbase\stdext\system_error.h" />
     <ClInclude Include="src\logging\basic_log.h" />
     <ClInclude Include="src\logging\logger.h" />
+    <ClInclude Include="src\logging\multi_process_log.h" />
     <ClInclude Include="src\logging\single_process_log.h" />
   </ItemGroup>
   <ItemGroup>
@@ -47,8 +49,10 @@
     <ClCompile Include="src\logging\severity.cpp" />
     <ClCompile Include="src\process\this_module.cpp" />
     <ClCompile Include="src\process\this_process.cpp" />
+    <ClCompile Include="src\stdext\mutex.cpp" />
     <ClCompile Include="src\stdext\stream_operator.cpp" />
     <ClCompile Include="src\stdext\string.cpp" />
+    <ClCompile Include="src\stdext\system_error.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
