@@ -61,7 +61,7 @@ namespace {
 
 std::optional<PatchDescriptor> Parse(const std::filesystem::path& ppf)
 {
-   TDD_ASSERT(ppf.is_absolute());
+   TDD_CHECK(ppf.is_absolute(), "Absolute path required");
 
    try {
       return DoParse(ppf);
