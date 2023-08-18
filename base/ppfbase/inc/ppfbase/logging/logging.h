@@ -28,7 +28,13 @@ namespace tdd::base::logging {
 
 #define TDD_LOG_STREAM(level) TDD_LOG_EX(level).stream()
 
-#define TDD_LOG(level) TDD_LOG_LAZY_STREAM(TDD_LOG_STREAM(level), TDD_LOG_IS_ON(level))
+// Logs the message if 'cond' is true
+#define TDD_LOG_IF(cond, level) \
+   TDD_LOG_LAZY_STREAM( \
+      TDD_LOG_STREAM(level), \
+      TDD_LOG_IS_ON(level) && (cond))
+
+#define TDD_LOG(level) TDD_LOG_IF(true, level)
 
 #define TDD_VLOG(n) TDD_LOG(TDD_LOG_LEVEL(Verbose_ ## n))
 
@@ -39,3 +45,17 @@ namespace tdd::base::logging {
 #define TDD_LOG_WARN()     TDD_LOG(Warning)
 #define TDD_LOG_ERROR()    TDD_LOG(Error)
 #define TDD_LOG_FATAL()    TDD_LOG(Fatal)
+
+#define TDD_LOG_DEBUG_IF(cond)    TDD_LOG_IF((cond), Debug)
+#define TDD_LOG_INFO_IF(cond)     TDD_LOG_IF((cond), Info)
+#define TDD_LOG_WARN_IF(cond)     TDD_LOG_IF((cond), Warning)
+#define TDD_LOG_ERROR_IF(cond)    TDD_LOG_IF((cond), Error)
+#define TDD_LOG_FATAL_IF(cond)    TDD_LOG_IF((cond), Fatal)
+
+#define TDD_CHECK(cond, msg) TDD_LOG_FATAL_IF(!(cond)) << msg;
+
+#ifdef _DEBUG
+#define TDD_DCHECK TDD_CHECK
+#else
+#define TDD_DCHECK(...) (void)0
+#endif //_DEBUG

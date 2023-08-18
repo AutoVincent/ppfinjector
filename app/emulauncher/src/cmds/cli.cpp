@@ -25,7 +25,7 @@ namespace {
          }
       }
 
-      TDD_ASSERT(false);
+      TDD_LOG_FATAL() << "No commands to execute";
       return 0;
    }
 }

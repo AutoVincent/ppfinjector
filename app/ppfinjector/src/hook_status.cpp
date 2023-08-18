@@ -1,6 +1,6 @@
 #include "hook_status.h"
 
-#include <ppfbase/diagnostics/assert.h>
+#include <ppfbase/logging/logging.h>
 
 namespace tdd::app::ppfinjector::HookStatus {
 
@@ -14,7 +14,7 @@ DisableFurtherHooks::DisableFurtherHooks() noexcept
 }
 DisableFurtherHooks::~DisableFurtherHooks() noexcept
 {
-   TDD_ASSERT(--g_nesting >= 0);
+   TDD_CHECK(--g_nesting >= 0, "Nesting count mismatch");
 }
 
 bool ShouldExecute() noexcept
