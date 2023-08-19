@@ -1,7 +1,10 @@
 #include "hook_status.h"
 #include "read_ops_log.h"
 
+#include <ppftk/config/app.h>
+#include <ppftk/config/patch.h>
 #include <ppftk/rom_patch/flat_patch.h>
+#include <ppftk/rom_patch/patch_file_exts.h>
 #include <ppftk/rom_patch/ppf/parser.h>
 
 #include <ppfbase/branding.h>
@@ -9,6 +12,7 @@
 #include <ppfbase/filesystem/file.h>
 #include <ppfbase/filesystem/path_service.h>
 #include <ppfbase/process/this_module.h>
+#include <ppfbase/stdext/string.h>
 
 #include <atomic>
 #include <filesystem>
@@ -24,6 +28,7 @@ namespace tdd::app::ppfinjector {
 namespace {
 
    namespace fs = std::filesystem;
+   namespace AppConfig = tk::config::App;
 
    auto g_origCreateFileW = CreateFileW;
    auto g_origReadFile = ReadFile;
@@ -51,13 +56,19 @@ namespace {
       TDD_DISABLE_COPY_MOVE(LastErrorRestorer);
    };
 
-   [[nodiscard]] bool IsWindowsFile(const fs::path& file)
+   [[nodiscard]] bool IsTargetable(const fs::path& file)
    {
       static const fs::path kWindows(L"C:\\Windows\\");
 
+      const auto targetExt = stdext::WideToUtf8(file.extension().wstring());
+
+      if (AppConfig::TargetExts().count(targetExt) == 0) {
+         return false;
+      }
+
       const auto [winEnd, nothing] =
          std::mismatch(kWindows.begin(), kWindows.end(), file.begin());
-      return kWindows.end() == winEnd;
+      return kWindows.end() != winEnd;
    }
 
 
@@ -69,12 +80,7 @@ namespace {
       _In_ DWORD dwCreationDisposition,
       _In_ DWORD dwFlagsAndAttributes,
       _In_opt_ HANDLE hTemplateFile)
-   {
-      static constexpr auto kPpfExt = L".ppf";
-
-      static constexpr auto kTarget =
-         L"Castlevania - Symphony of the Night (USA) (Track 1).bin";
-      
+   {      
       const auto hFile = g_origCreateFileW(
             lpFileName,
             dwDesiredAccess,
@@ -96,37 +102,36 @@ namespace {
       LastErrorRestorer lastErr;
       TDD_PPF_DISABLE_FURTHER_HOOKS();
 
-      fs::path target;
-      try {
-         target = fs::canonical(lpFileName);
-      }
-      catch (const std::exception& e) {
+      std::error_code ec;
+      const auto target = fs::canonical(lpFileName, ec);
+      if (ec) {
          TDD_LOG_DEBUG() << "Target [" << lpFileName
-            << "] can't be canonicalized: " << e.what();
+            << "] can't be canonicalized: " << ec.message();
          return hFile;
       }
 
       TDD_LOG_DEBUG() << "Opened: " << lpFileName;
-      if (IsWindowsFile(target)) {
+      if (!IsTargetable(target)) {
          return hFile;
       }
 
-      target.replace_extension(kPpfExt);
-      if (!fs::exists(target)) {
+      tk::config::Patch patchConfig(target);
+
+      if (patchConfig.PatchFile().empty()) {
          return hFile;
       }
 
       TDD_LOG_INFO() << "Target: " << lpFileName;
-      TDD_LOG_INFO() << "Patch: " << target.wstring();
+      TDD_LOG_INFO() << "Patch: " << patchConfig.PatchFile().wstring();
 
       if (g_targetFile != INVALID_HANDLE_VALUE) {
          TDD_LOG_WARN() << "Already opened before. Replacing with new handle.";
       }
 
       g_targetFile = hFile;
-      g_readOpsLog = std::make_unique<ReadOpsLog>(hFile, lpFileName);
+      g_readOpsLog = std::make_unique<ReadOpsLog>(hFile, target);
 
-      const auto patch = tk::rompatch::ppf::Parse(target);
+      const auto patch = tk::rompatch::ppf::Parse(patchConfig.PatchFile());
       if (!patch.has_value()) {
          TDD_LOG_WARN() << "Unable to parse patch";
          return hFile;
@@ -303,6 +308,8 @@ void InitLog()
       sharedLog.replace_extension(L".log");
       base::logging::InitDllLog(sharedLog);
    }
+
+   base::logging::SetMinLogLevel(AppConfig::LogLevel());
 }
 
 }
