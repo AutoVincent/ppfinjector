@@ -27,7 +27,7 @@ ReadOpsLog::ReadOpsLog(HANDLE hFile, const std::filesystem::path& targetFile)
    std::wostringstream logFileName;
    logFileName << base::process::ThisProcess::Name().stem().wstring() << "."
       << ::GetCurrentProcessId() << "."
-      << targetFile.filename().wstring() << ".writeops.log";
+      << targetFile.filename().wstring() << ".readops.log";
 
    const auto logPath = logDir.value() / logFileName.str();
    m_log.exceptions(kNoException);

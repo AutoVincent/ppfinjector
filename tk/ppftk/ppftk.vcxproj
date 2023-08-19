@@ -11,15 +11,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="inc\ppftk\config\app.h" />
+    <ClInclude Include="inc\ppftk\config\patch.h" />
     <ClInclude Include="inc\ppftk\rom_patch\flat_patch.h" />
     <ClInclude Include="inc\ppftk\rom_patch\patch_descriptor.h" />
+    <ClInclude Include="inc\ppftk\rom_patch\patch_file_exts.h" />
     <ClInclude Include="inc\ppftk\rom_patch\patch_item.h" />
     <ClInclude Include="inc\ppftk\rom_patch\ppf\parser.h" />
     <ClInclude Include="inc\ppftk\rom_patch\ppf\ppf3.h" />
+    <ClInclude Include="src\config\app_impl.h" />
     <ClInclude Include="src\rom_patch\ppf\schema.h" />
     <ClInclude Include="src\rom_patch\ppf\v3.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\config\app.cpp" />
+    <ClCompile Include="src\config\app_impl.cpp" />
+    <ClCompile Include="src\config\patch.cpp" />
     <ClCompile Include="src\rom_patch\flat_patch.cpp" />
     <ClCompile Include="src\rom_patch\patch_descriptor.cpp" />
     <ClCompile Include="src\rom_patch\ppf\parser.cpp" />

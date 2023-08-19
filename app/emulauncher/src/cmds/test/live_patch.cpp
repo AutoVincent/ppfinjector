@@ -1,5 +1,7 @@
 #include "live_patch.h"
 
+#include <ppftk/rom_patch/patch_file_exts.h>
+
 #include <ppfbase/branding.h>
 #include <ppfbase/logging/logging.h>
 #include <ppfbase/process/this_process.h>
@@ -84,7 +86,7 @@ void LivePatch::VerifyPaths()
 
    {
       auto ppf = origCano;
-      ppf.replace_extension(".ppf");
+      ppf.replace_extension(tk::rompatch::exts::kPpf);
 
       if (!fs::exists(ppf)) {
          throw std::runtime_error("PPF not found for " + origCano.string());
