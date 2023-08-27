@@ -70,6 +70,7 @@ public:
          std::span<uint8_t> range) noexcept;
 
       void CheckCompatible(const ConstIterator& other) const noexcept;
+      void LoadSector(uint64_t sectorAddr) noexcept;
 
       SectorView m_sector;
       uint64_t m_rangeStart;
@@ -140,12 +141,6 @@ public:
 
    [[nodiscard]] bool empty() const noexcept;
    [[nodiscard]] size_type size() const noexcept;
-
-   reference front() noexcept;
-   const_reference front() const noexcept;
-
-   reference back() noexcept;
-   const_reference back() const noexcept;
 
 private:
    uint64_t m_addr;

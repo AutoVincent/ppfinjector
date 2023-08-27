@@ -123,8 +123,37 @@ TEST_CASE("SectorRange: Iterate sectors with partial first and last")
          kSectorOffset,
          kSectorData.size_bytes() - spec::kSectorSize));
 
-   CHECK(kTestSectorCount == std::distance(range.begin(), range.end()));
+   auto end = range.end();
+
+   CHECK(kTestSectorCount == std::distance(range.begin(), end));
    CHECK(kTestSectorCount == CountSectors(range));
+}
+
+TEST_CASE("SectorRange: Mid portion of a single sector")
+{
+   const SectorRange range(
+      kTestSectorStart + kSectorOffset,
+      kSectorData.subspan(kSectorOffset, 16));
+
+   const auto beg = range.begin();
+   auto end = range.end();
+   --end;
+   CHECK(beg == end);
+}
+
+TEST_CASE("SectorRange: 2 partial sectors")
+{
+   const SectorRange range(
+      kTestSectorStart + kSectorOffset,
+      kSectorData.subspan(kSectorOffset, spec::kSectorSize));
+   CHECK(range.size() == 2);
+
+   const auto beg = range.begin();
+   CHECK(beg->DataOffset() == kSectorOffset);
+   const auto last = beg + 1;
+   auto end = range.end();
+   --end;
+   CHECK(last == end);
 }
 
 }

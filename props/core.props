@@ -8,6 +8,7 @@
   <PropertyGroup>
     <OutDir>$(TddBinDir)</OutDir>
     <IntDir>$(TddTempDir)</IntDir>
+    <CodeAnalysisRuleSet>CppCoreCheckRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <SpectreMitigation>Spectre</SpectreMitigation>

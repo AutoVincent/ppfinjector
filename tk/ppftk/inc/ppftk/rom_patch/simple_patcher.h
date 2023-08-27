@@ -10,11 +10,11 @@ namespace tdd::tk::rompatch {
    class [[nodiscard]] SimplePatcher : public IPatcher
    {
    public:
-      SimplePatcher(PatchDescriptor&& fullPatch);
+      SimplePatcher(PatchDescriptor&& fullPatch) noexcept;
 
       TDD_DEFAULT_ALL_SPECIAL_MEMBERS(SimplePatcher);
 
-      void Patch(
+      [[nodiscard]] std::optional<AdditionalReads> Patch(
          const uint64_t addr,
          std::span<uint8_t> buffer) override;
 
@@ -23,7 +23,7 @@ namespace tdd::tk::rompatch {
          const uint64_t tgtStart,
          const uint64_t tgtEnd) const noexcept;
 
-      PatchDescriptor m_patches;
+      PatchDescriptor::FullPatch m_patches;
       std::pair<uint64_t, uint64_t> m_addrRange;
 
    };

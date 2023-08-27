@@ -1,6 +1,5 @@
 #pragma once
 
-#include <set>
 #include <vector>
 
 namespace tdd::tk::rompatch {
