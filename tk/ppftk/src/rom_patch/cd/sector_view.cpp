@@ -6,13 +6,13 @@
 
 namespace tdd::tk::rompatch::cd {
 
-SectorView::SectorView()
+SectorView::SectorView() noexcept
    : m_number(0)
    , m_offset(0)
    , m_data()
 {}
 
-SectorView::SectorView(const uint64_t addr, std::span<uint8_t> data)
+SectorView::SectorView(const uint64_t addr, std::span<uint8_t> data) noexcept
    : m_number(addr / spec::kSectorSize)
    , m_offset(addr % spec::kSectorSize)
    , m_data(data)

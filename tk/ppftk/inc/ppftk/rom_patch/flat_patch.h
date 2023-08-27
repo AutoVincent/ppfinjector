@@ -87,7 +87,7 @@ namespace tdd::tk::rompatch {
       [[nodiscard]] bool empty() const noexcept;
 
       // IPatcher
-      void Patch(
+      std::optional<AdditionalReads> Patch(
          const uint64_t addr,
          std::span<uint8_t> buffer) override;
 

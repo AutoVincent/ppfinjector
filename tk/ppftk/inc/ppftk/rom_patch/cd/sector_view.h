@@ -13,8 +13,8 @@ namespace spec {
 class [[nodiscard]] SectorView
 {
 public:
-   SectorView();
-   SectorView(const uint64_t addr, std::span<uint8_t> data);
+   SectorView() noexcept;
+   SectorView(const uint64_t addr, std::span<uint8_t> data) noexcept;
 
    ~SectorView() = default;
    TDD_DEFAULT_COPY_MOVE(SectorView);

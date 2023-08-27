@@ -76,6 +76,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="test\ppftk_test.cpp" />
+    <ClCompile Include="test\rom_patch\cd\patcher_test.cpp" />
     <ClCompile Include="test\rom_patch\cd\sector_patch_test.cpp" />
     <ClCompile Include="test\rom_patch\cd\sector_range_test.cpp" />
   </ItemGroup>

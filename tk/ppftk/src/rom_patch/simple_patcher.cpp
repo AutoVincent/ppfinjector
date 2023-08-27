@@ -6,35 +6,34 @@
 
 namespace tdd::tk::rompatch {
 
-SimplePatcher::SimplePatcher(PatchDescriptor&& fullPatch)
-   : m_patches(std::move(fullPatch))
+SimplePatcher::SimplePatcher(PatchDescriptor&& fullPatch) noexcept
+   : m_patches(std::move(fullPatch).TakeFullPatch())
    , m_addrRange(0, 0)
 {
-   const auto& patches = m_patches.GetFullPatch();
-   if (patches.empty()) {
+   if (m_patches.empty()) {
       return;
    }
 
-   m_addrRange.first = patches.front().address;
-   m_addrRange.second = patches.back().address + patches.back().data.size();
+   m_addrRange.first = m_patches.front().address;
+   m_addrRange.second = m_patches.back().address + m_patches.back().data.size();
 }
 
-void SimplePatcher::Patch(const uint64_t addr, std::span<uint8_t> buffer)
+std::optional<IPatcher::AdditionalReads> SimplePatcher::Patch(
+   const uint64_t addr,
+   std::span<uint8_t> buffer)
 {
    const auto bufferEnd = addr + buffer.size();
    if (!Overlaps(addr, bufferEnd)) {
-      return;
+      return std::nullopt;
    }
-
-   const auto& patches = m_patches.GetFullPatch();
 
    // std::lower_bound finds the first item that fails the predicate. The
    // predicate used to do the search must match the predicate used to sort
    // the container. We want the entry such that 'p.address <= addr'. For this
    // we need search backwards with 'operator>'.
    const auto rit = std::lower_bound(
-      patches.rbegin(),
-      patches.rend(),
+      m_patches.rbegin(),
+      m_patches.rend(),
       addr,
       [](const auto& p, const auto addr) {
          return p.address > addr;
@@ -43,11 +42,13 @@ void SimplePatcher::Patch(const uint64_t addr, std::span<uint8_t> buffer)
 
    // https://en.cppreference.com/w/cpp/iterator/reverse_iterator/base
    auto it = rit.base();
-   if (it != patches.begin()) {
+   if (it != m_patches.begin()) {
       --it;
    }
 
-   ApplyPatches(addr, buffer, it, patches.end());
+   ApplyPatches(addr, buffer, it, m_patches.end());
+
+   return std::nullopt;
 }
 
 bool SimplePatcher::Overlaps(

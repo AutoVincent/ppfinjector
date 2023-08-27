@@ -263,4 +263,9 @@ const std::string& PatchDescriptor::GetDescription() const noexcept
    return m_description;
 }
 
+PatchDescriptor::FullPatch&& PatchDescriptor::TakeFullPatch() && noexcept
+{
+   return std::move(m_fullPatch);
+}
+
 }

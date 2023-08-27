@@ -188,24 +188,24 @@ bool FlatPatch::empty() const noexcept
    return m_patch.empty();
 }
 
-void FlatPatch::Patch(
+std::optional<IPatcher::AdditionalReads> FlatPatch::Patch(
    const uint64_t addr,
    std::span<uint8_t> buffer)
 {
    const auto endAddr = addr + buffer.size_bytes();
 
    if (!IsInRange(addr, endAddr)) {
-      return;
+      return std::nullopt;
    }
 
    if (addr < m_lastRead->address) {
       if (!SeekBackward(addr, endAddr)) {
-         return;
+         return std::nullopt;
       }
    }
    else if (m_lastRead->address < addr) {
       if (!SeekForward(addr, endAddr)) {
-         return;
+         return std::nullopt;
       }
    }
 
@@ -240,6 +240,7 @@ void FlatPatch::Patch(
    }
 
    --m_lastRead;
+   return std::nullopt;
 }
 
 bool FlatPatch::IsInRange(

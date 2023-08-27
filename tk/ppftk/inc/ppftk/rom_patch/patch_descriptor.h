@@ -53,6 +53,8 @@ namespace tdd::tk::rompatch {
       [[nodiscard]] const std::string& GetFileId() const noexcept;
       [[nodiscard]] const std::string& GetDescription() const noexcept;
 
+      [[nodiscard]] FullPatch&& TakeFullPatch() && noexcept;
+
    private:
       FullPatch m_fullPatch;
       ValidationData m_validationData;

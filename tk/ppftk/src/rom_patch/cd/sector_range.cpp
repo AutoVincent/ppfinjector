@@ -26,14 +26,14 @@ SectorRange::ConstIterator::ConstIterator() noexcept
    , m_range()
 {}
 
-SectorRange::ConstIterator::reference
-SectorRange::ConstIterator::operator*() const noexcept
+SectorRange::ConstIterator::reference SectorRange::ConstIterator::operator*()
+   const noexcept
 {
    return *(operator->());
 }
 
-SectorRange::ConstIterator::pointer
-SectorRange::ConstIterator::operator->() const noexcept
+SectorRange::ConstIterator::pointer SectorRange::ConstIterator::operator->()
+   const noexcept
 {
    TDD_CHECK(m_sector.SectorAddress() <= m_rangeEnd, "Can't dereference end");
 
@@ -46,14 +46,7 @@ SectorRange::ConstIterator& SectorRange::ConstIterator::operator++() noexcept
    TDD_CHECK(sectorAddr < m_rangeEnd, "Can't increment past end");
 
    sectorAddr += spec::kSectorSize;
-   std::span<uint8_t> data;
-   if (sectorAddr < m_rangeEnd) {
-      const auto count = std::min(m_rangeEnd - sectorAddr, spec::kSectorSize);
-      data = m_range.subspan(sectorAddr - m_rangeStart, count);
-   }
-   // eles we reached the end.
-
-   m_sector = SectorView(sectorAddr, data);
+   LoadSector(sectorAddr);
    return *this;
 }
 
@@ -70,16 +63,7 @@ SectorRange::ConstIterator& SectorRange::ConstIterator::operator--() noexcept
    TDD_CHECK(sectorAddr >= m_rangeStart, "Can't decrement past begin");
 
    sectorAddr -= spec::kSectorSize;
-   std::span<uint8_t> data;
-   if (sectorAddr < m_rangeStart) {
-      const auto count = spec::kSectorSize + sectorAddr - m_rangeStart;
-      data = m_range.subspan(0, count);
-   }
-   else {
-      data = m_range.subspan(sectorAddr - m_rangeStart, spec::kSectorSize);
-   }
-
-   m_sector = SectorView(sectorAddr, data);
+   LoadSector(sectorAddr);
 
    return *this;
 }
@@ -91,8 +75,8 @@ SectorRange::ConstIterator SectorRange::ConstIterator::operator--(int) noexcept
    return tmp;
 }
 
-SectorRange::ConstIterator&
-SectorRange::ConstIterator::operator+=(const difference_type offset) noexcept
+SectorRange::ConstIterator& SectorRange::ConstIterator::operator+=(
+   const difference_type offset) noexcept
 {
    if (offset == 0) {
       return *this;
@@ -101,10 +85,10 @@ SectorRange::ConstIterator::operator+=(const difference_type offset) noexcept
       return this->operator-=(-offset);
    }
 
-   const auto oneBeforeTarget = m_sector.SectorNumber() + offset - 1;
-   TDD_CHECK(
-      oneBeforeTarget * spec::kSectorSize < m_rangeEnd,
-      "Can't seek after end");
+   const auto oneBeforeTarget =
+      (m_sector.SectorNumber() + offset - 1) * spec::kSectorSize;
+
+   TDD_CHECK(oneBeforeTarget < m_rangeEnd, "Can't seek after end");
 
    m_sector = SectorView(oneBeforeTarget, {});
    return this->operator++();
@@ -118,8 +102,8 @@ SectorRange::ConstIterator SectorRange::ConstIterator::operator+(
    return tmp;
 }
 
-SectorRange::ConstIterator&
-SectorRange::ConstIterator::operator-=(const difference_type offset) noexcept
+SectorRange::ConstIterator& SectorRange::ConstIterator::operator-=(
+   const difference_type offset) noexcept
 {
    if (offset == 0) {
       return *this;
@@ -128,10 +112,10 @@ SectorRange::ConstIterator::operator-=(const difference_type offset) noexcept
       return this->operator+=(-offset);
    }
 
-   const auto oneAfterTarget = m_sector.SectorNumber() - offset + 1;
-   TDD_CHECK(
-      oneAfterTarget * spec::kSectorSize > m_rangeStart,
-      "Can't seek before begin");
+   const auto oneAfterTarget =
+      (m_sector.SectorNumber() - offset + 1) * spec::kSectorSize;
+
+   TDD_CHECK(oneAfterTarget > m_rangeStart, "Can't seek before begin");
 
    m_sector = SectorView(oneAfterTarget, {});
    return this->operator--();
@@ -145,12 +129,12 @@ SectorRange::ConstIterator SectorRange::ConstIterator::operator-(
    return tmp;
 }
 
-SectorRange::ConstIterator::difference_type
-SectorRange::ConstIterator::operator-(const ConstIterator& rhs) const noexcept
+SectorRange::ConstIterator::difference_type SectorRange::ConstIterator::
+operator-(const ConstIterator& rhs) const noexcept
 {
    CheckCompatible(rhs);
    const int64_t start = m_sector.SectorNumber();
-   const int64_t end   = rhs.m_sector.SectorNumber();
+   const int64_t end = rhs.m_sector.SectorNumber();
    return start - end;
 }
 
@@ -167,9 +151,8 @@ bool SectorRange::ConstIterator::operator==(
    return m_sector.SectorNumber() == other.m_sector.SectorNumber();
 }
 
-
-std::strong_ordering
-SectorRange::ConstIterator::operator<=>(const ConstIterator& rhs) const noexcept
+std::strong_ordering SectorRange::ConstIterator::operator<=>(
+   const ConstIterator& rhs) const noexcept
 {
    CheckCompatible(rhs);
    return m_sector.SectorNumber() <=> rhs.m_sector.SectorNumber();
@@ -185,22 +168,20 @@ SectorRange::ConstIterator::ConstIterator(
    , m_range(range)
 {
    const auto startSector = StartSector(m_rangeStart);
-   const auto endSector   = EndSector(m_rangeEnd);
+   const auto endSector = EndSector(m_rangeEnd);
 
    TDD_CHECK(
       startSector <= sectorNumber && sectorNumber <= endSector,
       "Sector out of range");
 
-   auto sectorAddress = sectorNumber * spec::kSectorSize;
+   const auto sectorAddress = sectorNumber * spec::kSectorSize;
 
    if (sectorNumber == endSector) {
       m_sector = SectorView(sectorAddress, {});
       return;
    }
 
-   sectorAddress += spec::kSectorSize;
-   m_sector = SectorView(sectorAddress, {});
-   this->operator--();
+   LoadSector(sectorAddress);
 }
 
 void SectorRange::ConstIterator::CheckCompatible(
@@ -218,15 +199,45 @@ void SectorRange::ConstIterator::CheckCompatible(
       0 == memcmp(m_range.data(), other.m_range.data(), m_range.size_bytes()),
       "Different memory content");
 }
+void SectorRange::ConstIterator::LoadSector(uint64_t sectorAddr) noexcept
+{
+   TDD_DCHECK(
+      sectorAddr % spec::kSectorSize == 0,
+      "Expect sector aligned address");
 
-SectorRange::Iterator::reference
-SectorRange::Iterator::operator*() const noexcept
+   std::span<uint8_t> data;
+   if (sectorAddr >= m_rangeEnd) {
+      TDD_DCHECK(
+         m_rangeEnd + spec::kSectorSize >= sectorAddr,
+         "Sector address too far after range");
+      // We've reached the end. No need to populate 'data'.
+   }
+   else if (sectorAddr < m_rangeStart) {
+      TDD_DCHECK(
+         sectorAddr + spec::kSectorSize > m_rangeStart,
+         "Sector address too far ahead of range");
+      const auto count = spec::kSectorSize + sectorAddr - m_rangeStart;
+      data = m_range.subspan(0, std::min(count, m_range.size_bytes()));
+      sectorAddr = m_rangeStart;
+   }
+   else {
+      const auto rangeOffset = sectorAddr - m_rangeStart;
+      const auto count =
+         std::min(m_range.size() - rangeOffset, spec::kSectorSize);
+      data = m_range.subspan(rangeOffset, count);
+   }
+
+   m_sector = SectorView(sectorAddr, data);
+}
+
+SectorRange::Iterator::reference SectorRange::Iterator::operator*()
+   const noexcept
 {
    return *(this->operator->());
 }
 
-SectorRange::Iterator::pointer
-SectorRange::Iterator::operator->() const noexcept
+SectorRange::Iterator::pointer SectorRange::Iterator::operator->()
+   const noexcept
 {
    return const_cast<pointer>(Base::operator->());
 }
@@ -257,38 +268,38 @@ SectorRange::Iterator SectorRange::Iterator::operator--(int) noexcept
    return tmp;
 }
 
-SectorRange::Iterator&
-SectorRange::Iterator::operator+=(const difference_type offset) noexcept
+SectorRange::Iterator& SectorRange::Iterator::operator+=(
+   const difference_type offset) noexcept
 {
    Base::operator+=(offset);
    return *this;
 }
 
-SectorRange::Iterator
-SectorRange::Iterator::operator+(const difference_type offset) noexcept
+SectorRange::Iterator SectorRange::Iterator::operator+(
+   const difference_type offset) noexcept
 {
    auto tmp = *this;
    tmp += offset;
    return tmp;
 }
 
-SectorRange::Iterator&
-SectorRange::Iterator::operator-=(const difference_type offset) noexcept
+SectorRange::Iterator& SectorRange::Iterator::operator-=(
+   const difference_type offset) noexcept
 {
    Base::operator-=(offset);
    return *this;
 }
 
-SectorRange::Iterator
-SectorRange::Iterator::operator-(const difference_type offset) noexcept
+SectorRange::Iterator SectorRange::Iterator::operator-(
+   const difference_type offset) noexcept
 {
    auto tmp = *this;
    tmp -= offset;
    return tmp;
 }
 
-SectorRange::Iterator::reference
-SectorRange::Iterator::operator[](const difference_type offset) const noexcept
+SectorRange::Iterator::reference SectorRange::Iterator::operator[](
+   const difference_type offset) const noexcept
 {
    return const_cast<reference>(Base::operator[](offset));
 }
@@ -355,30 +366,6 @@ bool SectorRange::empty() const noexcept
 SectorRange::size_type SectorRange::size() const noexcept
 {
    return EndSector(m_addr + m_data.size_bytes()) - StartSector(m_addr);
-}
-
-SectorRange::reference SectorRange::front() noexcept
-{
-   return *begin();
-}
-
-SectorRange::const_reference SectorRange::front() const noexcept
-{
-   return *begin();
-}
-
-SectorRange::reference SectorRange::back() noexcept
-{
-   auto last = end();
-   --last;
-   return *last;
-}
-
-SectorRange::const_reference SectorRange::back() const noexcept
-{
-   auto last = end();
-   --last;
-   return *last;
 }
 
 }

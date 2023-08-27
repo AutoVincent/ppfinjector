@@ -77,8 +77,17 @@
     <ClInclude Include="inc\ppftk\rom_patch\patchers.h">
       <Filter>PublicHeaders\rom_patch</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ppftk\rom_patch\cd\sector_patch.h">
+      <Filter>PublicHeaders\rom_patch\cd</Filter>
+    </ClInclude>
     <ClInclude Include="inc\ppftk\rom_patch\cd\spec.h">
       <Filter>PublicHeaders\rom_patch\cd</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppftk\rom_patch\cd\patcher.h">
+      <Filter>PublicHeaders\rom_patch\cd</Filter>
+    </ClInclude>
+    <ClInclude Include="src\rom_patch\apply_patches.h">
+      <Filter>Source\rom_patch</Filter>
     </ClInclude>
     <ClInclude Include="inc\ppftk\rom_patch\cd\sector_range.h">
       <Filter>PublicHeaders\rom_patch\cd</Filter>
@@ -120,6 +129,12 @@
     </ClCompile>
     <ClCompile Include="src\rom_patch\simple_patcher.cpp">
       <Filter>Source\rom_patch</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rom_patch\cd\patcher.cpp">
+      <Filter>Source\rom_patch\cd</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rom_patch\cd\sector_patch.cpp">
+      <Filter>Source\rom_patch\cd</Filter>
     </ClCompile>
     <ClCompile Include="src\rom_patch\cd\sector_range.cpp">
       <Filter>Source\rom_patch\cd</Filter>

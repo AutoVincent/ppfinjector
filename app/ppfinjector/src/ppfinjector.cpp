@@ -193,7 +193,7 @@ namespace {
 
       // 3. Apply patch
       if (targetAddr.has_value()) {
-         g_patch->Patch(
+         std::ignore = g_patch->Patch(
             targetAddr.value(),
             std::span(static_cast<uint8_t*>(lpBuffer) , *lpNumberOfBytesRead));
       }
