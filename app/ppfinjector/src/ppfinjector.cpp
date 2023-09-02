@@ -3,8 +3,8 @@
 
 #include <ppftk/config/app.h>
 #include <ppftk/config/patch.h>
-#include <ppftk/rom_patch/flat_patch.h>
 #include <ppftk/rom_patch/patch_file_exts.h>
+#include <ppftk/rom_patch/patchers.h>
 #include <ppftk/rom_patch/ppf/parser.h>
 
 #include <ppfbase/branding.h>
@@ -36,7 +36,7 @@ namespace {
    auto g_origCloseHandle = CloseHandle;
 
    std::unique_ptr<ReadOpsLog> g_readOpsLog;
-   tk::rompatch::FlatPatch g_patch;
+   std::unique_ptr<tk::rompatch::IPatcher> g_patch;
    std::atomic<HANDLE> g_targetFile = INVALID_HANDLE_VALUE;
 
    struct [[nodiscard]] LastErrorRestorer
@@ -131,13 +131,14 @@ namespace {
       g_targetFile = hFile;
       g_readOpsLog = std::make_unique<ReadOpsLog>(hFile, target);
 
-      const auto patch = tk::rompatch::ppf::Parse(patchConfig.PatchFile());
+      auto patch = tk::rompatch::ppf::Parse(patchConfig.PatchFile());
       if (!patch.has_value()) {
          TDD_LOG_WARN() << "Unable to parse patch";
          return hFile;
       }
 
-      g_patch = patch->Flatten();
+      g_patch = std::make_unique<tk::rompatch::SimplePatcher>(
+         std::move(patch).value());
 
       return hFile;
    }
@@ -154,7 +155,7 @@ namespace {
          || hFile == NULL
          || hFile == INVALID_HANDLE_VALUE
          || hFile != g_targetFile
-         || g_patch.empty();
+         || nullptr == g_patch;
 
       if (skipHook) {
          return g_origReadFile(
@@ -192,10 +193,9 @@ namespace {
 
       // 3. Apply patch
       if (targetAddr.has_value()) {
-         g_patch.Patch(
+         g_patch->Patch(
             targetAddr.value(),
-            *lpNumberOfBytesRead,
-            static_cast<char*>(lpBuffer));
+            std::span(static_cast<char*>(lpBuffer) , *lpNumberOfBytesRead));
       }
       else {
          TDD_LOG_WARN() << "Unable to get file pointer location for read";

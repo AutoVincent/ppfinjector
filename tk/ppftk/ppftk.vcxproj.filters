@@ -65,6 +65,15 @@
     <ClInclude Include="src\config\app_impl.h">
       <Filter>Source\config</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ppftk\rom_patch\ipatcher.h">
+      <Filter>PublicHeaders\rom_patch</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppftk\rom_patch\simple_patcher.h">
+      <Filter>PublicHeaders\rom_patch</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppftk\rom_patch\patchers.h">
+      <Filter>PublicHeaders\rom_patch</Filter>
+    </ClInclude>
     <ClInclude Include="inc\ppftk\rom_patch\cd\spec.h">
       <Filter>PublicHeaders\rom_patch\cd</Filter>
     </ClInclude>
@@ -93,6 +102,9 @@
     </ClCompile>
     <ClCompile Include="src\config\app.cpp">
       <Filter>Source\config</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rom_patch\simple_patcher.cpp">
+      <Filter>Source\rom_patch</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

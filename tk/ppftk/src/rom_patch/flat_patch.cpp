@@ -190,10 +190,9 @@ bool FlatPatch::empty() const noexcept
 
 void FlatPatch::Patch(
    const uint64_t addr,
-   const uint64_t size,
-   char* buffer) const noexcept
+   std::span<char> buffer)
 {
-   const auto endAddr = addr + size;
+   const auto endAddr = addr + buffer.size_bytes();
 
    if (!IsInRange(addr, endAddr)) {
       return;
@@ -219,19 +218,19 @@ void FlatPatch::Patch(
       if (patch.address <= addr) {
          // Target start in the middle of patch
          const size_t skip = addr - patch.address;
-         const auto copySize = std::min(size, patch.patchLength - skip);
+         const auto copySize = std::min(buffer.size_bytes(), patch.patchLength - skip);
          memcpy_s(
-            buffer,
+            buffer.data(),
             copySize,
             reinterpret_cast<const char*>(patch.patch) + skip,
             copySize);
       }
       else {
          const auto offset = patch.address - addr;
-         const auto availableBufferSize = size - offset;
+         const auto availableBufferSize = buffer.size_bytes() - offset;
          const auto copySize = std::min(availableBufferSize, patch.patchLength);
          memcpy_s(
-            buffer + offset,
+            &buffer[offset],
             copySize,
             patch.patch,
             copySize);
@@ -247,11 +246,11 @@ bool FlatPatch::IsInRange(
    const uint64_t targetAddrBegin,
    const uint64_t targetAddrEnd) const
 {
-   if (targetAddrEnd < begin()->address) {
+   if (targetAddrEnd <= begin()->address) {
       return false;
    }
 
-   if (targetAddrBegin > m_back->address + m_back->patchLength) {
+   if (targetAddrBegin >= m_back->address + m_back->patchLength) {
       return false;
    }
 

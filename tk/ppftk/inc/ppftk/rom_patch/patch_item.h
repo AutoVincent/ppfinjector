@@ -9,7 +9,7 @@ namespace tdd::tk::rompatch {
 
    struct [[nodiscard]] PatchItem
    {
-      size_t address;
+      uint64_t address;
       DataBuffer data;
 
       [[nodiscard]] bool operator<(const PatchItem& other) const noexcept
