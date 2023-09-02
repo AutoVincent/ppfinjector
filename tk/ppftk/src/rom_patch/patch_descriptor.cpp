@@ -7,6 +7,8 @@
 #include <ppfbase/logging/logging.h>
 #include <ppfbase/stdext/iostream.h>
 
+#include <algorithm>
+
 namespace tdd::tk::rompatch {
 
 namespace {
@@ -46,11 +48,6 @@ namespace {
    }
 }
 
-FlatPatch PatchDescriptor::Flatten() const
-{
-   return FlatPatch(*this);
-}
-
 void PatchDescriptor::Compact()
 {
    const auto& patch = std::as_const(m_fullPatch);
@@ -62,6 +59,10 @@ void PatchDescriptor::Compact()
 
    FullPatch compacted;
    PatchItem merged{};
+
+   TDD_DCHECK(
+      std::is_sorted(patch.begin(), patch.end()),
+      "Patches are not sorted");
 
    for (const auto& entry : patch) {
       if (entry.data.empty()) {
@@ -77,13 +78,13 @@ void PatchDescriptor::Compact()
       }
 
       if (!merged.data.empty()) {
-         compacted.insert(merged);
+         compacted.push_back(merged);
       }
       merged = entry;
    }
 
    if (!merged.data.empty()) {
-      compacted.insert(merged);
+      compacted.push_back(merged);
    }
 
    m_fullPatch = std::move(compacted);
@@ -156,13 +157,13 @@ bool PatchDescriptor::Compact(
       }
 
       if (!merged.data.empty()) {
-         compacted.insert(merged);
+         compacted.push_back(merged);
       }
       merged = entry;
    }
 
    if (!merged.data.empty()) {
-      compacted.insert(merged);
+      compacted.push_back(merged);
    }
 
    m_fullPatch = std::move(compacted);
@@ -181,12 +182,23 @@ bool PatchDescriptor::AddPatchData(
    const size_t address,
    DataBuffer&& data)
 {
-   const auto [it, inserted] = m_fullPatch.emplace(address, std::move(data));
-   if (!inserted) {
+   PatchItem newPatch{
+      .address = address,
+      .data = std::move(data)};
+
+   const auto it = std::lower_bound(
+      m_fullPatch.begin(),
+      m_fullPatch.end(),
+      newPatch);
+
+   if (it != m_fullPatch.end() && it->address == address) {
       TDD_LOG_ERROR() << "Patch data for address [" << address
          << "] already exists.";
+      return false;
    }
-   return inserted;
+
+   m_fullPatch.insert(it, std::move(newPatch));
+   return true;
 }
 
 void PatchDescriptor::SetFullPatch(FullPatch&& patch) noexcept

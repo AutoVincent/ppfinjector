@@ -1,12 +1,13 @@
 #pragma once
 
+#include <ppftk/rom_patch/ipatcher.h>
 #include <ppftk/rom_patch/patch_descriptor.h>
 
 #include <vector>
 
 namespace tdd::tk::rompatch {
 
-   class [[nodiscard]] FlatPatch
+   class [[nodiscard]] FlatPatch : public IPatcher
    {
    private:
       using FlattenedPatches = std::vector<uint64_t>;
@@ -85,10 +86,10 @@ namespace tdd::tk::rompatch {
       iterator end() const noexcept;
       [[nodiscard]] bool empty() const noexcept;
 
+      // IPatcher
       void Patch(
          const uint64_t addr,
-         const uint64_t size,
-         char* buffer) const noexcept;
+         std::span<char> buffer) override;
 
    private:
       [[nodiscard]] bool IsInRange(

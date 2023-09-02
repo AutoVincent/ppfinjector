@@ -15,11 +15,14 @@
     <ClInclude Include="inc\ppftk\config\patch.h" />
     <ClInclude Include="inc\ppftk\rom_patch\cd\spec.h" />
     <ClInclude Include="inc\ppftk\rom_patch\flat_patch.h" />
+    <ClInclude Include="inc\ppftk\rom_patch\ipatcher.h" />
+    <ClInclude Include="inc\ppftk\rom_patch\patchers.h" />
     <ClInclude Include="inc\ppftk\rom_patch\patch_descriptor.h" />
     <ClInclude Include="inc\ppftk\rom_patch\patch_file_exts.h" />
     <ClInclude Include="inc\ppftk\rom_patch\patch_item.h" />
     <ClInclude Include="inc\ppftk\rom_patch\ppf\parser.h" />
     <ClInclude Include="inc\ppftk\rom_patch\ppf\ppf3.h" />
+    <ClInclude Include="inc\ppftk\rom_patch\simple_patcher.h" />
     <ClInclude Include="src\config\app_impl.h" />
     <ClInclude Include="src\rom_patch\ppf\schema.h" />
     <ClInclude Include="src\rom_patch\ppf\v3.h" />
@@ -33,6 +36,7 @@
     <ClCompile Include="src\rom_patch\ppf\parser.cpp" />
     <ClCompile Include="src\rom_patch\ppf\ppf3.cpp" />
     <ClCompile Include="src\rom_patch\ppf\v3.cpp" />
+    <ClCompile Include="src\rom_patch\simple_patcher.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

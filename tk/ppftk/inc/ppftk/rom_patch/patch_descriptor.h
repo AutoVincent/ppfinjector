@@ -6,23 +6,18 @@
 
 #include <fstream>
 #include <optional>
-#include <set>
 #include <string>
 #include <vector>
 
 namespace tdd::tk::rompatch {
 
-   class FlatPatch;
-
    class [[nodiscard]] PatchDescriptor
    {
    public:
       using ValidationData = PatchItem;
-      using FullPatch = std::set<PatchItem>;
+      using FullPatch = std::vector<PatchItem>;
 
       TDD_DEFAULT_ALL_SPECIAL_MEMBERS(PatchDescriptor);
-
-      FlatPatch Flatten() const;
 
       void Compact();
       [[nodiscard]] bool Compact(
