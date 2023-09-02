@@ -1,8 +1,8 @@
 ﻿---
-AccessModifierOffset: '0'
+AccessModifierOffset: '-3'
 AlignAfterOpenBracket: AlwaysBreak
 AlignConsecutiveMacros: 'true'
-AlignConsecutiveAssignments: 'true'
+AlignConsecutiveAssignments: 'false'
 AlignConsecutiveDeclarations: 'false'
 AlignEscapedNewlines: Right
 AlignOperands: 'false'

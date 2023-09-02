@@ -5,10 +5,19 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Tests\rom_patch">
+      <UniqueIdentifier>{5d870390-ce77-4c76-b5f3-b7ca4adfaed0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tests\rom_patch\cd">
+      <UniqueIdentifier>{a4a17e06-d6e6-42f4-b446-635e2977f492}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test\ppftk_test.cpp">
       <Filter>Tests</Filter>
+    </ClCompile>
+    <ClCompile Include="test\rom_patch\cd\sector_range_test.cpp">
+      <Filter>Tests\rom_patch\cd</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
