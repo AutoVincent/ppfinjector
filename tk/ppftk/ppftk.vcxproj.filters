@@ -27,6 +27,9 @@
     <Filter Include="Source\config">
       <UniqueIdentifier>{76927b45-7aae-42cf-a069-397b909c146a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PublicHeaders\rom_patch\cd">
+      <UniqueIdentifier>{2ef0bf40-7468-445d-a223-df89f9adbf55}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\ppftk\rom_patch\ppf\parser.h">
@@ -61,6 +64,9 @@
     </ClInclude>
     <ClInclude Include="src\config\app_impl.h">
       <Filter>Source\config</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ppftk\rom_patch\cd\spec.h">
+      <Filter>PublicHeaders\rom_patch\cd</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
