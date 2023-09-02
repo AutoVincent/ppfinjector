@@ -36,6 +36,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "detours", "deps\detours\det
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ppftk_test", "tk\ppftk\ppftk_test.vcxproj", "{0CCB3C35-4FDD-40DE-9B02-8734CD5E8426}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "0-aux", "0-aux", "{FD605332-7834-41A3-83A9-C99842FB6358}"
+	ProjectSection(SolutionItems) = preProject
+		.clang-format = .clang-format
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64

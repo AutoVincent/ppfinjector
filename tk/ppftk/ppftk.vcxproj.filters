@@ -30,6 +30,9 @@
     <Filter Include="PublicHeaders\rom_patch\cd">
       <UniqueIdentifier>{2ef0bf40-7468-445d-a223-df89f9adbf55}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source\rom_patch\cd">
+      <UniqueIdentifier>{97b91867-b020-429a-ad2e-0ffb6a33d0b3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\ppftk\rom_patch\ppf\parser.h">
@@ -77,6 +80,9 @@
     <ClInclude Include="inc\ppftk\rom_patch\cd\spec.h">
       <Filter>PublicHeaders\rom_patch\cd</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ppftk\rom_patch\cd\sector_range.h">
+      <Filter>PublicHeaders\rom_patch\cd</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\rom_patch\flat_patch.cpp">
@@ -105,6 +111,9 @@
     </ClCompile>
     <ClCompile Include="src\rom_patch\simple_patcher.cpp">
       <Filter>Source\rom_patch</Filter>
+    </ClCompile>
+    <ClCompile Include="src\rom_patch\cd\sector_range.cpp">
+      <Filter>Source\rom_patch\cd</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
