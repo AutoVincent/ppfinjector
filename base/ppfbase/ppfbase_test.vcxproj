@@ -10,68 +10,22 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="inc\ppfbase\algorithm\crc32.h" />
-    <ClInclude Include="inc\ppfbase\branding.h" />
-    <ClInclude Include="inc\ppfbase\chrono\timestamp.h" />
-    <ClInclude Include="inc\ppfbase\diagnostics\assert.h" />
-    <ClInclude Include="inc\ppfbase\diagnostics\debugger.h" />
-    <ClInclude Include="inc\ppfbase\filesystem\file.h" />
-    <ClInclude Include="inc\ppfbase\filesystem\path_service.h" />
-    <ClInclude Include="inc\ppfbase\logging\ilog.h" />
-    <ClInclude Include="inc\ppfbase\logging\logging.h" />
-    <ClInclude Include="inc\ppfbase\logging\log_msg.h" />
-    <ClInclude Include="inc\ppfbase\logging\severity.h" />
-    <ClInclude Include="inc\ppfbase\logging\sharing_mode.h" />
-    <ClInclude Include="inc\ppfbase\preprocessor_utils.h" />
-    <ClInclude Include="inc\ppfbase\process\this_module.h" />
-    <ClInclude Include="inc\ppfbase\process\this_process.h" />
-    <ClInclude Include="inc\ppfbase\stdext\iostream.h" />
-    <ClInclude Include="inc\ppfbase\stdext\mutex.h" />
-    <ClInclude Include="inc\ppfbase\stdext\poor_mans_expected.h" />
-    <ClInclude Include="inc\ppfbase\stdext\scope_exit.h" />
-    <ClInclude Include="inc\ppfbase\stdext\stream_operator.h" />
-    <ClInclude Include="inc\ppfbase\stdext\string.h" />
-    <ClInclude Include="inc\ppfbase\stdext\system_error.h" />
-    <ClInclude Include="src\logging\basic_log.h" />
-    <ClInclude Include="src\logging\logger.h" />
-    <ClInclude Include="src\logging\multi_process_log.h" />
-    <ClInclude Include="src\logging\single_process_log.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\algorithm\crc32.cpp" />
-    <ClCompile Include="src\chrono\timestamp.cpp" />
-    <ClCompile Include="src\diagnostics\debugger.cpp" />
-    <ClCompile Include="src\filesystem\file.cpp" />
-    <ClCompile Include="src\filesystem\path_service.cpp" />
-    <ClCompile Include="src\logging\basic_log.cpp" />
-    <ClCompile Include="src\logging\logger.cpp" />
-    <ClCompile Include="src\logging\logging.cpp" />
-    <ClCompile Include="src\logging\log_msg.cpp" />
-    <ClCompile Include="src\logging\severity.cpp" />
-    <ClCompile Include="src\process\this_module.cpp" />
-    <ClCompile Include="src\process\this_process.cpp" />
-    <ClCompile Include="src\stdext\mutex.cpp" />
-    <ClCompile Include="src\stdext\stream_operator.cpp" />
-    <ClCompile Include="src\stdext\string.cpp" />
-    <ClCompile Include="src\stdext\system_error.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{2662f98e-e55c-4666-9790-b399a7985ca0}</ProjectGuid>
-    <RootNamespace>ppfbase</RootNamespace>
+    <ProjectGuid>{c898f3cc-1a4a-4411-b86e-95f4b3c61f80}</ProjectGuid>
+    <RootNamespace>ppfbasetest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -87,12 +41,14 @@
     <Import Project="..\..\props\core.props" />
     <Import Project="..\..\props\debug.props" />
     <Import Project="..\..\props\base.props" />
+    <Import Project="..\..\props\doctest.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\props\core.props" />
     <Import Project="..\..\props\release.props" />
     <Import Project="..\..\props\base.props" />
+    <Import Project="..\..\props\doctest.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -104,9 +60,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
     <Link>
-      <SubSystem>
-      </SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -115,13 +69,20 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
     </ClCompile>
     <Link>
-      <SubSystem>
-      </SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="test\algorithm\crc32_test.cpp" />
+    <ClCompile Include="test\ppfbase_test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="ppfbase.vcxproj">
+      <Project>{2662f98e-e55c-4666-9790-b399a7985ca0}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
