@@ -45,6 +45,12 @@
     <Filter Include="Source\stdext">
       <UniqueIdentifier>{4a3257c7-c41d-4d38-85c6-0e0273c02e3e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="PublicHeaders\algorithm">
+      <UniqueIdentifier>{0d4c16e3-ce2d-4d2b-8085-ead40fe1ac9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\algorithm">
+      <UniqueIdentifier>{8c43869a-17cf-4a1d-a606-190962777a54}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\ppfbase\branding.h">
@@ -122,6 +128,9 @@
     <ClInclude Include="src\logging\multi_process_log.h">
       <Filter>Source\logging</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ppfbase\algorithm\crc32.h">
+      <Filter>PublicHeaders\algorithm</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\process\this_process.cpp">
@@ -168,6 +177,9 @@
     </ClCompile>
     <ClCompile Include="src\stdext\system_error.cpp">
       <Filter>Source\stdext</Filter>
+    </ClCompile>
+    <ClCompile Include="src\algorithm\crc32.cpp">
+      <Filter>Source\algorithm</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
