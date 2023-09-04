@@ -13,7 +13,9 @@
   <ItemGroup>
     <ClInclude Include="inc\ppftk\config\app.h" />
     <ClInclude Include="inc\ppftk\config\patch.h" />
+    <ClInclude Include="inc\ppftk\rom_patch\cd\sector_patch.h" />
     <ClInclude Include="inc\ppftk\rom_patch\cd\sector_range.h" />
+    <ClInclude Include="inc\ppftk\rom_patch\cd\sector_view.h" />
     <ClInclude Include="inc\ppftk\rom_patch\cd\spec.h" />
     <ClInclude Include="inc\ppftk\rom_patch\flat_patch.h" />
     <ClInclude Include="inc\ppftk\rom_patch\ipatcher.h" />
@@ -25,6 +27,7 @@
     <ClInclude Include="inc\ppftk\rom_patch\ppf\ppf3.h" />
     <ClInclude Include="inc\ppftk\rom_patch\simple_patcher.h" />
     <ClInclude Include="src\config\app_impl.h" />
+    <ClInclude Include="src\rom_patch\apply_patches.h" />
     <ClInclude Include="src\rom_patch\ppf\schema.h" />
     <ClInclude Include="src\rom_patch\ppf\v3.h" />
   </ItemGroup>
@@ -32,7 +35,9 @@
     <ClCompile Include="src\config\app.cpp" />
     <ClCompile Include="src\config\app_impl.cpp" />
     <ClCompile Include="src\config\patch.cpp" />
+    <ClCompile Include="src\rom_patch\cd\sector_patch.cpp" />
     <ClCompile Include="src\rom_patch\cd\sector_range.cpp" />
+    <ClCompile Include="src\rom_patch\cd\sector_view.cpp" />
     <ClCompile Include="src\rom_patch\flat_patch.cpp" />
     <ClCompile Include="src\rom_patch\patch_descriptor.cpp" />
     <ClCompile Include="src\rom_patch\ppf\parser.cpp" />

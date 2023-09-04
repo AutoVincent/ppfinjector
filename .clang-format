@@ -27,7 +27,7 @@ BreakBeforeBraces: Custom
 BraceWrapping:
    AfterCaseLabel: true
    AfterClass: true
-   # AfterControlStatement: BWACS_MultiLine
+   AfterControlStatement: MultiLine
    AfterEnum: true
    AfterFunction: true
    AfterNamespace: false
@@ -66,6 +66,7 @@ NamespaceIndentation: Inner
 PenaltyReturnTypeOnItsOwnLine: '500'
 PointerAlignment: Left
 ReflowComments: 'true'
+SortIncludes: false
 SpaceAfterCStyleCast: 'false'
 SpaceAfterLogicalNot: 'false'
 SpaceAfterTemplateKeyword: 'true'

@@ -47,7 +47,6 @@ namespace {
    }
 }
 
-
 TEST_CASE("SectorRange: empty range")
 {
    SectorRange range;
@@ -111,9 +110,7 @@ TEST_CASE("SectorRange: Iterate sectors with partial last")
 {
    SectorRange range(
       kTestSectorStart,
-      kSectorData.subspan(
-         0,
-         kSectorData.size_bytes() - kSectorOffset));
+      kSectorData.subspan(0, kSectorData.size_bytes() - kSectorOffset));
    CHECK(kTestSectorCount == std::distance(range.begin(), range.end()));
    CHECK(kTestSectorCount == CountSectors(range));
 }

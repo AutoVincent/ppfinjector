@@ -190,7 +190,7 @@ bool FlatPatch::empty() const noexcept
 
 void FlatPatch::Patch(
    const uint64_t addr,
-   std::span<char> buffer)
+   std::span<uint8_t> buffer)
 {
    const auto endAddr = addr + buffer.size_bytes();
 

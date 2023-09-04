@@ -1,5 +1,7 @@
 #include <ppftk/rom_patch/simple_patcher.h>
 
+#include "apply_patches.h"
+
 #include <algorithm>
 
 namespace tdd::tk::rompatch {
@@ -17,7 +19,7 @@ SimplePatcher::SimplePatcher(PatchDescriptor&& fullPatch)
    m_addrRange.second = patches.back().address + patches.back().data.size();
 }
 
-void SimplePatcher::Patch(const uint64_t addr, std::span<char> buffer)
+void SimplePatcher::Patch(const uint64_t addr, std::span<uint8_t> buffer)
 {
    const auto bufferEnd = addr + buffer.size();
    if (!Overlaps(addr, bufferEnd)) {
@@ -45,37 +47,7 @@ void SimplePatcher::Patch(const uint64_t addr, std::span<char> buffer)
       --it;
    }
 
-   for(; it != patches.end() && it->address < bufferEnd; ++it) {
-      const auto patchEnd = it->address + it->data.size();
-      if (patchEnd <= addr) {
-         // The first patch we found preceed the target range completely. We
-         // need to skip at most 1 patch.
-         continue;
-      }
-
-      if (it->address <= addr) {
-         // target range starts in the middle of a patch
-         const size_t skip = addr - it->address;
-         const auto copySize = std::min(
-            buffer.size_bytes(),
-            it->data.size() - skip);
-         memcpy_s(
-            buffer.data(),
-            copySize,
-            &it->data[skip],
-            copySize);
-      }
-      else {
-         const auto offset = it->address - addr;
-         const auto availableBufferSize = buffer.size_bytes() - offset;
-         const auto copySize = std::min(availableBufferSize, it->data.size());
-         memcpy_s(
-            &buffer[offset],
-            copySize,
-            it->data.data(),
-            copySize);
-      }
-   }
+   ApplyPatches(addr, buffer, it, patches.end());
 }
 
 bool SimplePatcher::Overlaps(

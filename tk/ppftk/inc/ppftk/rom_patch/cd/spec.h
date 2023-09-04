@@ -27,8 +27,18 @@ union [[nodiscard]] SectorHeader
    uint32_t full;
 };
 
+inline constexpr uint8_t kMode0 = 0;
+inline constexpr uint8_t kMode1 = 1;
+inline constexpr uint8_t kMode2 = 2;
+
 inline constexpr size_t kSectorHeaderSize = 4;
 static_assert(sizeof(SectorHeader) == kSectorHeaderSize);
+
+union [[nodiscard]] Edc
+{
+   uint32_t full;
+   uint8_t parts[4];
+};
 
 // 14
 struct [[nodiscard]] Mode0Data
@@ -40,7 +50,8 @@ struct [[nodiscard]] Mode0Data
 struct [[nodiscard]] Mode1Data
 {
    uint8_t userData[2048];
-   uint8_t edc[4];
+   Edc edc;
+   
    // 8 bytes of '0'
    uint8_t intermediate[8];
    uint8_t pParity[172];
@@ -66,6 +77,9 @@ struct [[nodiscard]] XaSubmode
    uint8_t endOfRecord : 1;
 };
 
+inline constexpr uint8_t kXaForm1 = 0;
+inline constexpr uint8_t kXaForm2 = 1;
+
 // CD-ROM XA: 4.3.1
 union [[nodiscard]] XaSubHeader
 {
@@ -83,7 +97,7 @@ union [[nodiscard]] XaSubHeader
 struct [[nodiscard]] Mode2Xa1Data
 {
    uint8_t data[2048];
-   uint8_t edc[4];
+   Edc edc;
    uint8_t pParity[172];
    uint8_t qParity[104];
 };
@@ -93,7 +107,7 @@ struct [[nodiscard]] Mode2Xa2Data
 {
    uint8_t data[2324];
    // CRC-32 or 0
-   uint8_t edc[4];
+   Edc edc;
 };
 
 struct [[nodiscard]] Mode2XaData

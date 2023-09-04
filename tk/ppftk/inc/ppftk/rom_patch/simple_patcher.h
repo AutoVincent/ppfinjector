@@ -16,7 +16,7 @@ namespace tdd::tk::rompatch {
 
       void Patch(
          const uint64_t addr,
-         std::span<char> buffer) override;
+         std::span<uint8_t> buffer) override;
 
    private:
       [[nodiscard]] bool Overlaps(

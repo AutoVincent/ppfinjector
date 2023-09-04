@@ -9,6 +9,6 @@ namespace tdd::tk::rompatch {
       virtual ~IPatcher() = default;
       virtual void Patch(
          const uint64_t addr,
-         std::span<char> buffer) = 0;
+         std::span<uint8_t> buffer) = 0;
    };
 }

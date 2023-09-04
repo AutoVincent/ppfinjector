@@ -1,4 +1,5 @@
 #include <ppftk/rom_patch/flat_patch.h>
+#include <ppftk/rom_patch/cd/spec.h>
 #include <ppftk/rom_patch/ppf/parser.h>
 #include <ppftk/rom_patch/ppf/ppf3.h>
 
@@ -9,21 +10,68 @@
 
 #include <fstream>
 #include <iostream>
+#include <iomanip>
+#include <map>
 
-#include <Windows.h>
+namespace cd = tdd::tk::rompatch::cd::spec;
+
+template <typename Container>
+void DumpBlock(const Container& data)
+{
+   for (auto i = 0; i < data.size(); ++i) {
+      if (i != 0) {
+         std::cout << ",";
+      }
+      if (i % 16 == 0) {
+         std::cout << std::endl;
+      }
+      else {
+         std::cout << " ";
+      }
+      std::cout << "0x" << std::setw(2) << static_cast<uint32_t>(data[i]);
+   }
+}
+
+using SectorBlock =
+   std::array<uint8_t, tdd::tk::rompatch::cd::spec::kSectorSize>;
+
+void DumpSector(const char* varName, const SectorBlock& sector)
+{
+   std::cout << "std::array<uint8_t, tdd::tk::rompatch::cd::spec::kSectorSize> "
+      << varName << " = {";
+   std::cout << std::hex << std::setfill('0');
+   DumpBlock(sector);
+   std::cout << "};" << std::endl << std::endl;
+}
+
+void DumpPatchEntry(const tdd::tk::rompatch::PatchItem& patch)
+{
+   std::cout << "PatchItem address: 0x" << std::hex << std::setfill('0') << std::setw(8)
+      << patch.address << std::endl;
+
+   std::cout << "PatchItem data: {";
+   DumpBlock(patch.data);
+   std::cout << "}" << std::endl << std::endl;
+}
 
 int main()
 {
-   tdd::base::logging::InitSingleProcessLog();
-
-   const std::filesystem::path testPatch(
+   namespace fs = std::filesystem;
+   static const fs::path testPatch(
       "C:\\dev\\ppfinjector\\app\\patchtester\\data\\SotN-Randomizer (1691056147921).ppf");
 
-   const std::filesystem::path testTarget(
-      "C:\\Games\\Castlevania-Symphony of the Night[U] [SLUS-00067]\\Castlevania - Symphony of the Night (USA) (Track 1).bin");
+   static const fs::path testTarget(
+      "C:\\dev\\ppfinjector\\app\\patchtester\\data\\SotN-Randomizer (1691056147921).bin");
 
-   const std::filesystem::path compactedPatch(
-      "C:\\dev\\ppfinjector\\app\\patchtester\\data\\compacted.ppf");
+   static const fs::path verification(
+      "C:\\dev\\ppfinjector\\app\\patchtester\\data\\verification.bin");
+
+   static const std::map<const char*, fs::path> kDumpTargets{
+      {"kOriginalSector", testTarget},
+      {"kVerificationSector", verification}
+   };
+
+   tdd::base::logging::InitProcessLog();
 
    auto patch = tdd::tk::rompatch::ppf::Parse(testPatch);
 
@@ -32,48 +80,17 @@ int main()
       return 1;
    }
 
-   std::cout << "Success." << std::endl;
-   std::cout << "Validation data: "
-      << (patch->GetValidationData().data.empty() ? "not" : "")
-      << " present" << std::endl;
-   std::cout << "Patch entries: " << patch->GetFullPatch().size()
-      << std::endl;
+   const auto& firstEntry = patch->GetFullPatch().front();
+   const auto sectorNumber = firstEntry.address / cd::kSectorSize;
+   const auto sectorAddress = sectorNumber * cd::kSectorSize;
+   DumpPatchEntry(firstEntry);
 
-   //patch->Compact();
-   //std::cout << "After compact" << std::endl;
-   //std::cout << "Patch entries: " << patch->GetFullPatch().size()
-   //   << std::endl;
-
-   {
-      auto target = std::ifstream(testTarget, std::ios::binary);
-      if (!patch->Compact(target, 128)) {
-         std::cout << "Unable to compact with fillers";
-         return 2;
-      }
-      std::cout << "After compact" << std::endl;
-      std::cout << "Patch entries: " << patch->GetFullPatch().size()
-         << std::endl;
-
-      if (tdd::tk::rompatch::ppf::WritePpf3Patch(compactedPatch, patch.value())) {
-         std::cout << "Unable to write compacted PFF" << std::endl;
-      }
-      else {
-         std::cout << "Compacted patch saved" << std::endl;
-      }
-
-      const auto flatPatch = patch->Flatten();
-      const auto patchCount = std::distance(flatPatch.begin(), flatPatch.end());
-      std::cout << "Flattend patch has " << patchCount << " entries" << std::endl;
-
-      auto lastFromEnd = flatPatch.end();
-      --lastFromEnd;
-      auto lastFromBegin = flatPatch.begin();
-      std::advance(lastFromBegin, patchCount - 1);
-      if (lastFromBegin != lastFromEnd) {
-         std::cout << "Last iterator not equal" << std::endl;
-      }
+   for (const auto& [var, binPath] : kDumpTargets) {
+      auto target = std::ifstream(binPath, std::ios::binary);
+      SectorBlock sector;
+      target.seekg(sectorAddress, std::ios::beg);
+      tdd::stdext::Read(target, sector);
+      DumpSector(var, sector);
    }
-
-
    return 0;
 }

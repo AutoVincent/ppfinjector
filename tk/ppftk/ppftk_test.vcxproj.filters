@@ -19,5 +19,13 @@
     <ClCompile Include="test\rom_patch\cd\sector_range_test.cpp">
       <Filter>Tests\rom_patch\cd</Filter>
     </ClCompile>
+    <ClCompile Include="test\rom_patch\cd\sector_patch_test.cpp">
+      <Filter>Tests\rom_patch\cd</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="test\rom_patch\cd\test_sector_data.h">
+      <Filter>Tests\rom_patch\cd</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

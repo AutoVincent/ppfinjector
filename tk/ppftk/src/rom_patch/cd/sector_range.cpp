@@ -19,20 +19,8 @@ namespace {
    }
 }
 
-bool SectorRange::SectorView::IsComplete() const noexcept
-{
-   return data.size_bytes() == spec::kSectorSize;
-}
-
-spec::Sector* SectorRange::SectorView::AsSector() const noexcept
-{
-   TDD_DCHECK(data.size_bytes() == spec::kSectorSize, "Incomplete sector");
-
-   return reinterpret_cast<spec::Sector*>(data.data());
-}
-
 SectorRange::ConstIterator::ConstIterator() noexcept
-   : m_sector{0}
+   : m_sector()
    , m_rangeStart(0)
    , m_rangeEnd(0)
    , m_range()
@@ -47,30 +35,25 @@ SectorRange::ConstIterator::operator*() const noexcept
 SectorRange::ConstIterator::pointer
 SectorRange::ConstIterator::operator->() const noexcept
 {
-   TDD_CHECK(
-      m_sector.number * spec::kSectorSize <= m_rangeEnd,
-      "Can't dereference end");
+   TDD_CHECK(m_sector.SectorAddress() <= m_rangeEnd, "Can't dereference end");
 
    return &m_sector;
 }
 
 SectorRange::ConstIterator& SectorRange::ConstIterator::operator++() noexcept
 {
-   auto sectorAddr = m_sector.number * spec::kSectorSize;
+   auto sectorAddr = m_sector.SectorAddress();
    TDD_CHECK(sectorAddr < m_rangeEnd, "Can't increment past end");
 
-   ++m_sector.number;
    sectorAddr += spec::kSectorSize;
-   if (sectorAddr >= m_rangeEnd) {
-      // we've reached the end;
-      m_sector.data = std::span<uint8_t>();
-      return *this;
+   std::span<uint8_t> data;
+   if (sectorAddr < m_rangeEnd) {
+      const auto count = std::min(m_rangeEnd - sectorAddr, spec::kSectorSize);
+      data = m_range.subspan(sectorAddr - m_rangeStart, count);
    }
+   // eles we reached the end.
 
-   const auto count = std::min(m_rangeEnd - sectorAddr, spec::kSectorSize);
-
-   m_sector.data = m_range.subspan(sectorAddr - m_rangeStart, count);
-
+   m_sector = SectorView(sectorAddr, data);
    return *this;
 }
 
@@ -83,19 +66,20 @@ SectorRange::ConstIterator SectorRange::ConstIterator::operator++(int) noexcept
 
 SectorRange::ConstIterator& SectorRange::ConstIterator::operator--() noexcept
 {
-   auto sectorAddr = m_sector.number * spec::kSectorSize;
+   auto sectorAddr = m_sector.SectorAddress();
    TDD_CHECK(sectorAddr >= m_rangeStart, "Can't decrement past begin");
 
-   --m_sector.number;
    sectorAddr -= spec::kSectorSize;
+   std::span<uint8_t> data;
    if (sectorAddr < m_rangeStart) {
       const auto count = spec::kSectorSize + sectorAddr - m_rangeStart;
-      m_sector.data    = m_range.subspan(0, count);
+      data = m_range.subspan(0, count);
    }
    else {
-      m_sector.data =
-         m_range.subspan(sectorAddr - m_rangeStart, spec::kSectorSize);
+      data = m_range.subspan(sectorAddr - m_rangeStart, spec::kSectorSize);
    }
+
+   m_sector = SectorView(sectorAddr, data);
 
    return *this;
 }
@@ -117,11 +101,12 @@ SectorRange::ConstIterator::operator+=(const difference_type offset) noexcept
       return this->operator-=(-offset);
    }
 
-   const auto targetSectorAddr =
-      (m_sector.number + offset - 1) * spec::kSectorSize;
-   TDD_CHECK(targetSectorAddr < m_rangeEnd, "Can't seek after end");
+   const auto oneBeforeTarget = m_sector.SectorNumber() + offset - 1;
+   TDD_CHECK(
+      oneBeforeTarget * spec::kSectorSize < m_rangeEnd,
+      "Can't seek after end");
 
-   m_sector.number += offset - 1;
+   m_sector = SectorView(oneBeforeTarget, {});
    return this->operator++();
 }
 
@@ -143,11 +128,12 @@ SectorRange::ConstIterator::operator-=(const difference_type offset) noexcept
       return this->operator+=(-offset);
    }
 
-   const auto targetSectorAddr =
-      (m_sector.number - offset + 1) * spec::kSectorSize;
-   TDD_CHECK(targetSectorAddr > m_rangeStart, "Can't seek before begin");
+   const auto oneAfterTarget = m_sector.SectorNumber() - offset + 1;
+   TDD_CHECK(
+      oneAfterTarget * spec::kSectorSize > m_rangeStart,
+      "Can't seek before begin");
 
-   m_sector.number -= offset - 1;
+   m_sector = SectorView(oneAfterTarget, {});
    return this->operator--();
 }
 
@@ -163,8 +149,8 @@ SectorRange::ConstIterator::difference_type
 SectorRange::ConstIterator::operator-(const ConstIterator& rhs) const noexcept
 {
    CheckCompatible(rhs);
-   const int64_t start = m_sector.number;
-   const int64_t end   = rhs.m_sector.number;
+   const int64_t start = m_sector.SectorNumber();
+   const int64_t end   = rhs.m_sector.SectorNumber();
    return start - end;
 }
 
@@ -178,7 +164,7 @@ bool SectorRange::ConstIterator::operator==(
    const ConstIterator& other) const noexcept
 {
    CheckCompatible(other);
-   return m_sector.number == other.m_sector.number;
+   return m_sector.SectorNumber() == other.m_sector.SectorNumber();
 }
 
 
@@ -186,7 +172,7 @@ std::strong_ordering
 SectorRange::ConstIterator::operator<=>(const ConstIterator& rhs) const noexcept
 {
    CheckCompatible(rhs);
-   return m_sector.number <=> rhs.m_sector.number;
+   return m_sector.SectorNumber() <=> rhs.m_sector.SectorNumber();
 }
 
 SectorRange::ConstIterator::ConstIterator(
@@ -205,13 +191,15 @@ SectorRange::ConstIterator::ConstIterator(
       startSector <= sectorNumber && sectorNumber <= endSector,
       "Sector out of range");
 
-   m_sector.number = sectorNumber;
+   auto sectorAddress = sectorNumber * spec::kSectorSize;
 
-   if (m_sector.number == endSector) {
+   if (sectorNumber == endSector) {
+      m_sector = SectorView(sectorAddress, {});
       return;
    }
 
-   ++m_sector.number;
+   sectorAddress += spec::kSectorSize;
+   m_sector = SectorView(sectorAddress, {});
    this->operator--();
 }
 
