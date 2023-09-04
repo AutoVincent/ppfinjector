@@ -195,7 +195,7 @@ namespace {
       if (targetAddr.has_value()) {
          g_patch->Patch(
             targetAddr.value(),
-            std::span(static_cast<char*>(lpBuffer) , *lpNumberOfBytesRead));
+            std::span(static_cast<uint8_t*>(lpBuffer) , *lpNumberOfBytesRead));
       }
       else {
          TDD_LOG_WARN() << "Unable to get file pointer location for read";
