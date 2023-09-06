@@ -19,7 +19,7 @@ public:
    using reference = value_type&;
    using const_reference = const value_type&;
    using size_type = size_t;
-   using difference_type = ptrdiff_t;
+   using difference_type = SectorDiff;
 
    class ConstIterator
    {
@@ -65,16 +65,16 @@ public:
    private:
       friend class SectorRange;
       ConstIterator(
-         const uint64_t sectorAddr,
-         const uint64_t rangeAddr,
+         const SectorNumber sectorNumber,
+         const ByteAddress rangeAddr,
          std::span<uint8_t> range) noexcept;
 
       void CheckCompatible(const ConstIterator& other) const noexcept;
-      void LoadSector(uint64_t sectorAddr) noexcept;
+      void LoadSector(ByteAddress sectorAddr) noexcept;
 
       SectorView m_sector;
-      uint64_t m_rangeStart;
-      uint64_t m_rangeEnd;
+      ByteAddress m_rangeStart;
+      ByteAddress m_rangeEnd;
       std::span<uint8_t> m_range;
    };
 
@@ -115,8 +115,8 @@ public:
    private:
       friend class SectorRange;
       Iterator(
-         const uint64_t sectorAddr,
-         const uint64_t rangeAddr,
+         const SectorNumber sectorAddr,
+         const ByteAddress rangeAddr,
          std::span<uint8_t> range) noexcept;
 
       Iterator(const ConstIterator& other);
@@ -126,7 +126,7 @@ public:
    using const_iterator = ConstIterator;
 
    SectorRange() noexcept;
-   SectorRange(const uint64_t addr, std::span<uint8_t> data) noexcept;
+   SectorRange(const ByteAddress addr, std::span<uint8_t> data) noexcept;
 
    ~SectorRange() = default;
    TDD_DEFAULT_COPY_MOVE(SectorRange);
@@ -143,7 +143,7 @@ public:
    [[nodiscard]] size_type size() const noexcept;
 
 private:
-   uint64_t m_addr;
+   ByteAddress m_addr;
    std::span<uint8_t> m_data;
 };
 

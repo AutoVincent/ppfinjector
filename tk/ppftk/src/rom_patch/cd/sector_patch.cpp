@@ -15,18 +15,19 @@ namespace {
    static constexpr crc::LookupTable kCrcTable =
       crc::CompileLookupTable(crc::polynomials::kCdRom);
 
-   static constexpr size_t kRequireEdcUpdate = 0;
-   static constexpr size_t kNoEdcIdx = spec::kSectorSize;
+   static constexpr SectorOffset kRequireEdcUpdate(0);
+   static constexpr SectorOffset kNoEdcIdx(spec::kSectorSize);
 
-   static constexpr size_t kMode1EdcIdx = spec::kSync.size() +
-      spec::kSectorHeaderSize + sizeof(spec::Mode1Data::userData);
+   static constexpr SectorOffset kMode1EdcIdx(
+      spec::kSync.size() + spec::kSectorHeaderSize +
+      sizeof(spec::Mode1Data::userData));
 
-   static constexpr size_t kXa1EdcIdx = spec::kSync.size() +
-      spec::kSectorHeaderSize + sizeof(spec::XaSubHeader) * 2 +
-      sizeof(spec::Mode2Xa1Data::data);
+   static constexpr SectorOffset kXa1EdcIdx(
+      spec::kSync.size() + spec::kSectorHeaderSize +
+      sizeof(spec::XaSubHeader) * 2 + sizeof(spec::Mode2Xa1Data::data));
 
-   static constexpr size_t kXa2EdcIdx =
-      spec::kSectorSize - sizeof(spec::Mode2Xa2Data::edc);
+   static constexpr SectorOffset kXa2EdcIdx(
+      spec::kSectorSize - sizeof(spec::Mode2Xa2Data::edc));
 
 }
 
@@ -56,7 +57,7 @@ bool SectorPatch::operator<(const SectorPatch& other) const noexcept
 
 SectorPatch::AddPatchResult SectorPatch::AddPatch(PatchItem&& patch)
 {
-   const auto targetSector = patch.address / spec::kSectorSize;
+   const auto targetSector = ToSectorNumber(ByteAddress(patch.address));
    if (m_patches.empty()) {
       m_sectorNumber = targetSector;
    }
@@ -85,7 +86,7 @@ SectorPatch::AddPatchResult SectorPatch::AddPatch(const PatchItem& patch)
 
 void SectorPatch::Patch(SectorView& sector) const
 {
-   ApplyPatches(sector.DataOffset(), sector.Data(), m_patches);
+   ApplyPatches(sector.DataOffset().get(), sector.Data(), m_patches);
 
    if (HasUpdatedEdc()) {
       PatchEdc(sector);
@@ -95,7 +96,7 @@ void SectorPatch::Patch(SectorView& sector) const
    }
 }
 
-uint64_t SectorPatch::SectorNumber() const noexcept
+SectorNumber SectorPatch::SectorNumber() const noexcept
 {
    return m_sectorNumber;
 }
@@ -120,10 +121,10 @@ void SectorPatch::PatchEdc(SectorView& sector) const noexcept
 
    TDD_DCHECK(m_edc.has_value(), "No EDC to patch with");
 
-   for (size_t idx = std::max(sector.DataOffset(), m_edcIdx);
-        idx < sector.DataOffset() + sector.Size();
-        ++idx) {
-      sector[idx] = m_edc->parts[idx - m_edcIdx];
+   for (auto idx = std::max(sector.DataOffset(), m_edcIdx);
+        idx.get() < sector.DataOffset().get() + sector.Size();
+        ++idx.get()) {
+      sector[idx] = m_edc->parts[idx.get() - m_edcIdx.get()];
    }
 }
 
@@ -143,7 +144,7 @@ void SectorPatch::CalculateEdc(SectorView& sv) const noexcept
    case spec::kMode2:
       return CalculateMode2Edc(sector, sv.SectorNumber());
    default:
-      TDD_LOG_WARN() << "Invalid sector [" << sv.SectorNumber() << "]: mode ["
+      TDD_LOG_WARN() << "Invalid [" << sv.SectorNumber() << "]: mode ["
                      << sector->header.parts.mode << "]";
       return;
    }
@@ -164,13 +165,13 @@ void SectorPatch::CalculateMode1Edc(spec::Sector* sector) const noexcept
 
 void SectorPatch::CalculateMode2Edc(
    spec::Sector* sector,
-   const uint64_t sectorNumber) const noexcept
+   const cd::SectorNumber sectorNumber) const noexcept
 {
    if (sector->xa.subheader[0].full != sector->xa.subheader[0].full) {
       // The assumption is that we are dealing with PSX games. PSX CDs are all
       // in XA format. If the sector is a valid Mode 2 non-XA sector, it doesn't
       // have EDC anyway.
-      TDD_LOG_WARN() << "Sector [" << sectorNumber << "] is not XA";
+      TDD_LOG_WARN() << "[" << sectorNumber << "] is not XA";
       return;
    }
 

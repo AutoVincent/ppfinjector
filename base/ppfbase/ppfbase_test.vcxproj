@@ -77,6 +77,7 @@
   <ItemGroup>
     <ClCompile Include="test\algorithm\crc32_test.cpp" />
     <ClCompile Include="test\ppfbase_test.cpp" />
+    <ClCompile Include="test\stdext\type_traits_test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="ppfbase.vcxproj">

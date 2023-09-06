@@ -36,7 +36,7 @@ namespace tdd::tk::rompatch::cd {
       // Also calculate checksum data if required.
       void Patch(SectorView& sector) const;
 
-      [[nodiscard]] uint64_t SectorNumber() const noexcept;
+      [[nodiscard]] SectorNumber SectorNumber() const noexcept;
 
       [[nodiscard]] bool HasUpdatedEdc() const noexcept;
 
@@ -49,17 +49,18 @@ namespace tdd::tk::rompatch::cd {
       void CalculateEdc(SectorView& sv) const noexcept;
 
       void CalculateMode1Edc(spec::Sector* sector) const noexcept;
-      void CalculateMode2Edc(spec::Sector* sector, const uint64_t sectorNumber)
-         const noexcept;
+      void CalculateMode2Edc(
+         spec::Sector* sector,
+         const cd::SectorNumber sectorNumber) const noexcept;
       void CalculateXaForm1Edc(spec::Sector* sector) const noexcept;
       void CalculateXaForm2Edc(spec::Sector* sector) const noexcept;
       void ZeroXaForm2Edc(spec::Sector* sector) const noexcept;
 
       // filePtr / kSectorSize
-      uint64_t m_sectorNumber;
+      cd::SectorNumber m_sectorNumber;
       std::vector<PatchItem> m_patches;
       mutable std::optional<spec::Edc> m_edc;
-      mutable size_t m_edcIdx;
+      mutable SectorOffset m_edcIdx;
       // May not be needed if edc alone can fool the emulator.
       // mutable DataBuffer m_ecc;
    };

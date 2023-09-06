@@ -25,8 +25,12 @@ namespace tdd::tk::rompatch::cd {
          std::span<uint8_t> buffer) override;
 
    private:
+      [[nodiscard]] std::optional<AdditionalReads> DoPatch(
+         const ByteAddress addr,
+         std::span<uint8_t> buffer);
+
       AdditionalReads RequireAdditionalReads(
-         const uint64_t targetAddr,
+         const ByteAddress targetAddr,
          std::span<uint8_t> buffer) const;
 
       [[nodiscard]] bool RequireFullSector(

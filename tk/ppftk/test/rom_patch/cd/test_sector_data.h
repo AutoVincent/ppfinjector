@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ppftk/rom_patch/patch_item.h>
+#include <ppftk/rom_patch/cd/address.h>
 #include <ppftk/rom_patch/cd/spec.h>
 
 #include <array>
@@ -8,15 +9,15 @@
 // clang-format off
 namespace tdd::tk::rompatch::cd::TestSector {
 
-inline constexpr uint64_t kTargetAddr = 0x000a'eaa0;
-inline constexpr size_t kSectorOffset = kTargetAddr % spec::kSectorSize;
+inline constexpr ByteAddress kTargetAddr(0x000a'eaa0);
+inline constexpr ByteAddressDiff kSectorOffset(kTargetAddr.get() % spec::kSectorSize);
 
-inline constexpr uint64_t kSectorAddr = kTargetAddr - kSectorOffset;
+inline constexpr ByteAddress kSectorAddr(kTargetAddr.get() - kSectorOffset.get());
 
 static_assert(kTargetAddr > kSectorAddr);
 
 inline static PatchItem kPatch{
-   .address = kTargetAddr,
+   .address = kTargetAddr.get(),
    .data = {0x00}
 };
 

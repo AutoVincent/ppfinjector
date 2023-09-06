@@ -17,7 +17,7 @@ TEST_CASE("SectorPatch: Produce correct EDC after patching")
    // for the sub-cases.
    {
       CHECK(!patcher.HasUpdatedEdc());
-      
+
       auto sector = TestSector::kOriginalSector;
       SectorView sv(TestSector::kSectorAddr, sector);
       patcher.Patch(sv);
@@ -58,7 +58,9 @@ TEST_CASE("SectorPatch: Produce correct EDC after patching")
    SUBCASE("Patch unaffected portion")
    {
       auto sector = TestSector::kOriginalSector;
-      std::span<uint8_t> targetBlock(sector.begin(), TestSector::kSectorOffset);
+      std::span<uint8_t> targetBlock(
+         sector.begin(),
+         TestSector::kSectorOffset.get());
       SectorView sv(TestSector::kSectorAddr, targetBlock);
       patcher.Patch(sv);
       CHECK(
@@ -71,7 +73,8 @@ TEST_CASE("SectorPatch: Produce correct EDC after patching")
 
    SUBCASE("Patch affected snippet")
    {
-      static constexpr auto kSnippetOffset = TestSector::kSectorOffset & (~0xF);
+      static constexpr auto kSnippetOffset =
+         TestSector::kSectorOffset.get() & (~0xF);
       static constexpr auto kSnippetSize = 16;
 
       static const std::span<const uint8_t> kPatchedData(
@@ -85,7 +88,9 @@ TEST_CASE("SectorPatch: Produce correct EDC after patching")
 
       CHECK(0 != memcmp(kPatchedData.data(), targetBlock.data(), kSnippetSize));
 
-      SectorView sv(TestSector::kSectorAddr + kSnippetOffset, targetBlock);
+      SectorView sv(
+         TestSector::kSectorAddr + ByteAddressDiff(kSnippetOffset),
+         targetBlock);
       patcher.Patch(sv);
 
       CHECK(0 == memcmp(kPatchedData.data(), targetBlock.data(), kSnippetSize));
@@ -103,7 +108,9 @@ TEST_CASE("SectorPatch: Produce correct EDC after patching")
             &TestSector::kVerificationSector->xa.form1.edc,
             sizeof(spec::Edc)));
 
-      SectorView sv(TestSector::kSectorAddr + kOffset, targetBlock);
+      SectorView sv(
+         TestSector::kSectorAddr + ByteAddressDiff(kOffset),
+         targetBlock);
       patcher.Patch(sv);
       CHECK(
          0 ==
@@ -116,7 +123,7 @@ TEST_CASE("SectorPatch: Produce correct EDC after patching")
    SUBCASE("Patch individual EDC byte")
    {
       static constexpr auto kOffset = kSizeExcludeEcc - sizeof(spec::Edc);
-      
+
       for (auto i = 0; i < sizeof(spec::Edc); ++i) {
          auto sector = TestSector::kOriginalSector;
          std::span<uint8_t> targetBlock(sector.begin() + kOffset + i, 1);
@@ -124,7 +131,9 @@ TEST_CASE("SectorPatch: Produce correct EDC after patching")
             targetBlock[0] !=
             TestSector::kVerificationSector->xa.form1.edc.parts[i]);
 
-         SectorView sv(TestSector::kSectorAddr + kOffset + i, targetBlock);
+         SectorView sv(
+            TestSector::kSectorAddr + ByteAddressDiff(kOffset + i),
+            targetBlock);
          patcher.Patch(sv);
          CHECK(
             targetBlock[0] ==

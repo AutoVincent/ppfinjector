@@ -33,6 +33,7 @@
     <ClInclude Include="inc\ppfbase\stdext\stream_operator.h" />
     <ClInclude Include="inc\ppfbase\stdext\string.h" />
     <ClInclude Include="inc\ppfbase\stdext\system_error.h" />
+    <ClInclude Include="inc\ppfbase\stdext\type_traits.h" />
     <ClInclude Include="src\logging\basic_log.h" />
     <ClInclude Include="src\logging\logger.h" />
     <ClInclude Include="src\logging\multi_process_log.h" />

@@ -12,28 +12,30 @@ SectorView::SectorView() noexcept
    , m_data()
 {}
 
-SectorView::SectorView(const uint64_t addr, std::span<uint8_t> data) noexcept
-   : m_number(addr / spec::kSectorSize)
-   , m_offset(addr % spec::kSectorSize)
+SectorView::SectorView(
+   const cd::ByteAddress addr,
+   std::span<uint8_t> data) noexcept
+   : m_number(ToSectorNumber(addr))
+   , m_offset(GetSectorOffset(addr))
    , m_data(data)
 {
    TDD_DCHECK(data.size_bytes() <= spec::kSectorSize, "Data too big");
    if (data.empty()) {
-      m_offset = spec::kSectorSize;
+      m_offset.get() = spec::kSectorSize;
    }
 }
 
-uint64_t SectorView::SectorNumber() const noexcept
+SectorNumber SectorView::SectorNumber() const noexcept
 {
    return m_number;
 }
 
-uint64_t SectorView::SectorAddress() const noexcept
+ByteAddress SectorView::SectorAddress() const noexcept
 {
-   return m_number * spec::kSectorSize;
+   return ByteAddress(m_number.get() * spec::kSectorSize);
 }
 
-size_t SectorView::DataOffset() const noexcept
+SectorOffset SectorView::DataOffset() const noexcept
 {
    return m_offset;
 }
@@ -64,16 +66,21 @@ spec::Sector* SectorView::AsSector() const noexcept
 
    return reinterpret_cast<spec::Sector*>(m_data.data());
 }
-uint8_t& SectorView::operator[](const size_t idx) noexcept
+
+uint8_t& SectorView::operator[](const SectorOffset idx) noexcept
 {
-   TDD_DCHECK(m_offset <= idx && idx < spec::kSectorSize, "Idx out of bound");
-   return m_data[idx-m_offset];
+   TDD_DCHECK(
+      m_offset <= idx && idx.get() < spec::kSectorSize,
+      "Idx out of bound");
+   return m_data[idx.get() - m_offset.get()];
 }
 
-uint8_t SectorView::operator[](const size_t idx) const noexcept
+uint8_t SectorView::operator[](const SectorOffset idx) const noexcept
 {
-   TDD_DCHECK(m_offset <= idx && idx < spec::kSectorSize, "Idx out of bound");
-   return m_data[idx - m_offset];
+   TDD_DCHECK(
+      m_offset <= idx && idx.get() < spec::kSectorSize,
+      "Idx out of bound");
+   return m_data[idx.get() - m_offset.get()];
 }
 
 }

@@ -101,6 +101,9 @@
     <ClInclude Include="inc\ppftk\rom_patch\cd\sector_view.h">
       <Filter>PublicHeaders\rom_patch\cd</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ppftk\rom_patch\cd\address.h">
+      <Filter>PublicHeaders\rom_patch\cd</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\rom_patch\flat_patch.cpp">
@@ -143,6 +146,9 @@
       <Filter>Source\rom_patch\cd</Filter>
     </ClCompile>
     <ClCompile Include="src\rom_patch\cd\sector_view.cpp">
+      <Filter>Source\rom_patch\cd</Filter>
+    </ClCompile>
+    <ClCompile Include="test\rom_patch\cd\address.cpp">
       <Filter>Source\rom_patch\cd</Filter>
     </ClCompile>
   </ItemGroup>
