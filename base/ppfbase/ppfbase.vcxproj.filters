@@ -131,6 +131,9 @@
     <ClInclude Include="inc\ppfbase\algorithm\crc32.h">
       <Filter>PublicHeaders\algorithm</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ppfbase\stdext\type_traits.h">
+      <Filter>PublicHeaders\stdext</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\process\this_process.cpp">

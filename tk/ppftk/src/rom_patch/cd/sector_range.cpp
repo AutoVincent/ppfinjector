@@ -7,15 +7,14 @@
 namespace tdd::tk::rompatch::cd {
 
 namespace {
-   [[nodiscard]] uint64_t StartSector(const uint64_t startAddr)
-   {
-      return startAddr / spec::kSectorSize;
-   }
+   static constexpr ByteAddressDiff kOneSector(spec::kSectorSize);
+   static constexpr SectorDiff kSectorDiffZero(0);
 
-   [[nodiscard]] uint64_t EndSector(const uint64_t endAddr)
+   [[nodiscard]] SectorNumber EndSector(const ByteAddress endAddr)
    {
       // Add 1 if ends in the middle of a sector.
-      return endAddr / spec::kSectorSize + !!(endAddr % spec::kSectorSize);
+      const size_t addOne = GetSectorOffset(endAddr).get() != 0;
+      return SectorNumber(ToSectorNumber(endAddr).get() + addOne);
    }
 }
 
@@ -45,7 +44,7 @@ SectorRange::ConstIterator& SectorRange::ConstIterator::operator++() noexcept
    auto sectorAddr = m_sector.SectorAddress();
    TDD_CHECK(sectorAddr < m_rangeEnd, "Can't increment past end");
 
-   sectorAddr += spec::kSectorSize;
+   sectorAddr += ByteAddressDiff(spec::kSectorSize);
    LoadSector(sectorAddr);
    return *this;
 }
@@ -62,7 +61,7 @@ SectorRange::ConstIterator& SectorRange::ConstIterator::operator--() noexcept
    auto sectorAddr = m_sector.SectorAddress();
    TDD_CHECK(sectorAddr >= m_rangeStart, "Can't decrement past begin");
 
-   sectorAddr -= spec::kSectorSize;
+   sectorAddr.get() -= spec::kSectorSize;
    LoadSector(sectorAddr);
 
    return *this;
@@ -78,15 +77,15 @@ SectorRange::ConstIterator SectorRange::ConstIterator::operator--(int) noexcept
 SectorRange::ConstIterator& SectorRange::ConstIterator::operator+=(
    const difference_type offset) noexcept
 {
-   if (offset == 0) {
+   if (offset == kSectorDiffZero) {
       return *this;
    }
-   else if (offset < 0) {
+   else if (offset < kSectorDiffZero) {
       return this->operator-=(-offset);
    }
 
    const auto oneBeforeTarget =
-      (m_sector.SectorNumber() + offset - 1) * spec::kSectorSize;
+      ToByteAddress(m_sector.SectorNumber() + offset - SectorDiff(1));
 
    TDD_CHECK(oneBeforeTarget < m_rangeEnd, "Can't seek after end");
 
@@ -105,15 +104,15 @@ SectorRange::ConstIterator SectorRange::ConstIterator::operator+(
 SectorRange::ConstIterator& SectorRange::ConstIterator::operator-=(
    const difference_type offset) noexcept
 {
-   if (offset == 0) {
+   if (offset == kSectorDiffZero) {
       return *this;
    }
-   else if (offset < 0) {
+   else if (offset < kSectorDiffZero) {
       return this->operator+=(-offset);
    }
 
    const auto oneAfterTarget =
-      (m_sector.SectorNumber() - offset + 1) * spec::kSectorSize;
+      ToByteAddress(m_sector.SectorNumber() - offset + SectorDiff(1));
 
    TDD_CHECK(oneAfterTarget > m_rangeStart, "Can't seek before begin");
 
@@ -133,9 +132,7 @@ SectorRange::ConstIterator::difference_type SectorRange::ConstIterator::
 operator-(const ConstIterator& rhs) const noexcept
 {
    CheckCompatible(rhs);
-   const int64_t start = m_sector.SectorNumber();
-   const int64_t end = rhs.m_sector.SectorNumber();
-   return start - end;
+   return m_sector.SectorNumber() - rhs.m_sector.SectorNumber();
 }
 
 SectorRange::ConstIterator::reference SectorRange::ConstIterator::operator[](
@@ -159,22 +156,22 @@ std::strong_ordering SectorRange::ConstIterator::operator<=>(
 }
 
 SectorRange::ConstIterator::ConstIterator(
-   const uint64_t sectorNumber,
-   const uint64_t rangeAddr,
+   const SectorNumber sectorNumber,
+   const ByteAddress rangeAddr,
    std::span<uint8_t> range) noexcept
    : m_sector()
    , m_rangeStart(rangeAddr)
-   , m_rangeEnd(rangeAddr + range.size_bytes())
+   , m_rangeEnd(rangeAddr + ByteAddressDiff(range.size_bytes()))
    , m_range(range)
 {
-   const auto startSector = StartSector(m_rangeStart);
+   const auto startSector = ToSectorNumber(m_rangeStart);
    const auto endSector = EndSector(m_rangeEnd);
 
    TDD_CHECK(
       startSector <= sectorNumber && sectorNumber <= endSector,
       "Sector out of range");
 
-   const auto sectorAddress = sectorNumber * spec::kSectorSize;
+   const auto sectorAddress = ToByteAddress(sectorNumber);
 
    if (sectorNumber == endSector) {
       m_sector = SectorView(sectorAddress, {});
@@ -199,29 +196,30 @@ void SectorRange::ConstIterator::CheckCompatible(
       0 == memcmp(m_range.data(), other.m_range.data(), m_range.size_bytes()),
       "Different memory content");
 }
-void SectorRange::ConstIterator::LoadSector(uint64_t sectorAddr) noexcept
+void SectorRange::ConstIterator::LoadSector(ByteAddress sectorAddr) noexcept
 {
    TDD_DCHECK(
-      sectorAddr % spec::kSectorSize == 0,
+      Is0thSectorByte(sectorAddr),
       "Expect sector aligned address");
 
    std::span<uint8_t> data;
    if (sectorAddr >= m_rangeEnd) {
       TDD_DCHECK(
-         m_rangeEnd + spec::kSectorSize >= sectorAddr,
+         m_rangeEnd + kOneSector >= sectorAddr,
          "Sector address too far after range");
       // We've reached the end. No need to populate 'data'.
    }
    else if (sectorAddr < m_rangeStart) {
       TDD_DCHECK(
-         sectorAddr + spec::kSectorSize > m_rangeStart,
+         sectorAddr + kOneSector > m_rangeStart,
          "Sector address too far ahead of range");
-      const auto count = spec::kSectorSize + sectorAddr - m_rangeStart;
+      const auto count =
+         static_cast<size_t>((sectorAddr + kOneSector - m_rangeStart).get());
       data = m_range.subspan(0, std::min(count, m_range.size_bytes()));
       sectorAddr = m_rangeStart;
    }
    else {
-      const auto rangeOffset = sectorAddr - m_rangeStart;
+      const auto rangeOffset = (sectorAddr - m_rangeStart).get();
       const auto count =
          std::min(m_range.size() - rangeOffset, spec::kSectorSize);
       data = m_range.subspan(rangeOffset, count);
@@ -305,8 +303,8 @@ SectorRange::Iterator::reference SectorRange::Iterator::operator[](
 }
 
 SectorRange::Iterator::Iterator(
-   const uint64_t sectorNumber,
-   const uint64_t rangeAddr,
+   const SectorNumber sectorNumber,
+   const ByteAddress rangeAddr,
    std::span<uint8_t> range) noexcept
    : Base(sectorNumber, rangeAddr, range)
 {}
@@ -320,7 +318,7 @@ SectorRange::SectorRange() noexcept
    , m_data()
 {}
 
-SectorRange::SectorRange(const uint64_t addr, std::span<uint8_t> data) noexcept
+SectorRange::SectorRange(const ByteAddress addr, std::span<uint8_t> data) noexcept
    : m_addr(addr)
    , m_data(data)
 {}
@@ -337,7 +335,7 @@ SectorRange::const_iterator SectorRange::begin() const noexcept
 
 SectorRange::const_iterator SectorRange::cbegin() const noexcept
 {
-   return const_iterator(StartSector(m_addr), m_addr, m_data);
+   return const_iterator(ToSectorNumber(m_addr), m_addr, m_data);
 }
 
 SectorRange::iterator SectorRange::end() noexcept
@@ -353,7 +351,7 @@ SectorRange::const_iterator SectorRange::end() const noexcept
 SectorRange::const_iterator SectorRange::cend() const noexcept
 {
    return const_iterator(
-      EndSector(m_addr + m_data.size_bytes()),
+      EndSector(m_addr + ByteAddressDiff(m_data.size_bytes())),
       m_addr,
       m_data);
 }
@@ -365,7 +363,8 @@ bool SectorRange::empty() const noexcept
 
 SectorRange::size_type SectorRange::size() const noexcept
 {
-   return EndSector(m_addr + m_data.size_bytes()) - StartSector(m_addr);
+   const auto endAddr = m_addr + ByteAddressDiff(m_data.size_bytes());
+   return (EndSector(endAddr) - ToSectorNumber(m_addr)).get();
 }
 
 }

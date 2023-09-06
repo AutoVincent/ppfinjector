@@ -26,9 +26,9 @@ namespace {
       reinterpret_cast<uint8_t*>(kTestSectors.data()),
       kTestSectorCount* spec::kSectorSize);
 
-   static constexpr uint64_t kTestSectorStart = 123 * spec::kSectorSize;
+   static constexpr ByteAddress kTestSectorStart(123 * spec::kSectorSize);
 
-   static constexpr uint64_t kSectorOffset = spec::kSectorSize / 2;
+   static constexpr ByteAddressDiff kSectorOffset(spec::kSectorSize / 2);
 
    [[nodiscard]] size_t CountSectors(const SectorRange& range)
    {
@@ -51,7 +51,7 @@ TEST_CASE("SectorRange: empty range")
 {
    SectorRange range;
    CHECK(0 == range.size());
-   CHECK(0 == std::distance(range.begin(), range.end()));
+   CHECK(0 == std::distance(range.begin(), range.end()).get());
 }
 
 TEST_CASE("SectorRange: size")
@@ -66,7 +66,7 @@ TEST_CASE("SectorRange: size")
    {
       SectorRange range(
          kTestSectorStart + kSectorOffset,
-         kSectorData.subspan(kSectorOffset));
+         kSectorData.subspan(kSectorOffset.get()));
       CHECK(kTestSectorCount == range.size());
    }
 
@@ -75,8 +75,8 @@ TEST_CASE("SectorRange: size")
       SectorRange range(
          kTestSectorStart,
          kSectorData.subspan(
-            kSectorOffset,
-            kSectorData.size_bytes() - kSectorOffset));
+            kSectorOffset.get(),
+            kSectorData.size_bytes() - kSectorOffset.get()));
       CHECK(kTestSectorCount == range.size());
    }
 
@@ -93,7 +93,7 @@ TEST_CASE("SectorRange: size")
 TEST_CASE("SectorRange: Iterate complete sectors")
 {
    SectorRange range(kTestSectorStart, kSectorData);
-   CHECK(kTestSectorCount == std::distance(range.begin(), range.end()));
+   CHECK(kTestSectorCount == std::distance(range.begin(), range.end()).get());
    CHECK(kTestSectorCount == CountSectors(range));
 }
 
@@ -101,8 +101,8 @@ TEST_CASE("SectorRange: Iterate sectors with partial first")
 {
    SectorRange range(
       kTestSectorStart + kSectorOffset,
-      kSectorData.subspan(kSectorOffset));
-   CHECK(kTestSectorCount == std::distance(range.begin(), range.end()));
+      kSectorData.subspan(kSectorOffset.get()));
+   CHECK(kTestSectorCount == std::distance(range.begin(), range.end()).get());
    CHECK(kTestSectorCount == CountSectors(range));
 }
 
@@ -110,8 +110,8 @@ TEST_CASE("SectorRange: Iterate sectors with partial last")
 {
    SectorRange range(
       kTestSectorStart,
-      kSectorData.subspan(0, kSectorData.size_bytes() - kSectorOffset));
-   CHECK(kTestSectorCount == std::distance(range.begin(), range.end()));
+      kSectorData.subspan(0, kSectorData.size_bytes() - kSectorOffset.get()));
+   CHECK(kTestSectorCount == std::distance(range.begin(), range.end()).get());
    CHECK(kTestSectorCount == CountSectors(range));
 }
 
@@ -120,12 +120,12 @@ TEST_CASE("SectorRange: Iterate sectors with partial first and last")
    SectorRange range(
       kTestSectorStart + kSectorOffset,
       kSectorData.subspan(
-         kSectorOffset,
+         kSectorOffset.get(),
          kSectorData.size_bytes() - spec::kSectorSize));
 
    auto end = range.end();
 
-   CHECK(kTestSectorCount == std::distance(range.begin(), end));
+   CHECK(kTestSectorCount == std::distance(range.begin(), end).get());
    CHECK(kTestSectorCount == CountSectors(range));
 }
 
@@ -133,7 +133,7 @@ TEST_CASE("SectorRange: Mid portion of a single sector")
 {
    const SectorRange range(
       kTestSectorStart + kSectorOffset,
-      kSectorData.subspan(kSectorOffset, 16));
+      kSectorData.subspan(kSectorOffset.get(), 16));
 
    const auto beg = range.begin();
    auto end = range.end();
@@ -145,12 +145,12 @@ TEST_CASE("SectorRange: 2 partial sectors")
 {
    const SectorRange range(
       kTestSectorStart + kSectorOffset,
-      kSectorData.subspan(kSectorOffset, spec::kSectorSize));
+      kSectorData.subspan(kSectorOffset.get(), spec::kSectorSize));
    CHECK(range.size() == 2);
 
    const auto beg = range.begin();
-   CHECK(beg->DataOffset() == kSectorOffset);
-   const auto last = beg + 1;
+   CHECK(AsByteAddressDiff(beg->DataOffset()) == kSectorOffset);
+   const auto last = beg + SectorDiff(1);
    auto end = range.end();
    --end;
    CHECK(last == end);

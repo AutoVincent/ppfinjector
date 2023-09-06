@@ -50,6 +50,13 @@ std::optional<IPatcher::AdditionalReads> Patcher::Patch(
    const uint64_t addr,
    std::span<uint8_t> buffer)
 {
+   return DoPatch(ByteAddress(addr), buffer);
+}
+
+std::optional<IPatcher::AdditionalReads> Patcher::DoPatch(
+   const ByteAddress addr,
+   std::span<uint8_t> buffer)
+{
    {
       const auto additionalReads = RequireAdditionalReads(addr, buffer);
       if (additionalReads.firstAddr != 0 || additionalReads.lastAddr != 0) {
@@ -86,7 +93,7 @@ std::optional<IPatcher::AdditionalReads> Patcher::Patch(
 }
 
 IPatcher::AdditionalReads Patcher::RequireAdditionalReads(
-   const uint64_t targetAddr,
+   const ByteAddress targetAddr,
    std::span<uint8_t> buffer) const
 {
    const SectorRange range(targetAddr, buffer);
@@ -99,15 +106,15 @@ IPatcher::AdditionalReads Patcher::RequireAdditionalReads(
    }
 
    if (const auto& first = range.begin(); RequireFullSector(*first)) {
-      read.firstAddr = first->SectorAddress();
+      read.firstAddr = first->SectorAddress().get();
    }
 
    if (range.size() == 1) {
       return read;
    }
 
-   if (const auto& last = range.end() - 1; RequireFullSector(*last)) {
-      read.lastAddr= last->SectorAddress();
+   if (const auto& last = range.end() - SectorDiff(1); RequireFullSector(*last)) {
+      read.lastAddr= last->SectorAddress().get();
    }
 
    return read;

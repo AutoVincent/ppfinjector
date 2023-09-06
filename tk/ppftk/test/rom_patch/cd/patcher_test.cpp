@@ -25,7 +25,7 @@ TEST_CASE("Patcher: patch 1 complete sector")
 
    Patcher patcher(BuildPatches());
 
-   CHECK(!patcher.Patch(TestSector::kSectorAddr, sectorData).has_value());
+   CHECK(!patcher.Patch(TestSector::kSectorAddr.get(), sectorData).has_value());
 
    const auto sector = reinterpret_cast<spec::Sector*>(sectorData.data());
    CHECK(
@@ -47,10 +47,10 @@ TEST_CASE("Patcher: patching 1 partial sector")
    Patcher patcher(BuildPatches());
 
    const auto additionalReads =
-      patcher.Patch(TestSector::kSectorAddr + kOffset, targetPortion);
+      patcher.Patch(TestSector::kSectorAddr.get() + kOffset, targetPortion);
 
    CHECK(additionalReads.has_value());
-   CHECK(additionalReads->firstAddr == TestSector::kSectorAddr);
+   CHECK(additionalReads->firstAddr == TestSector::kSectorAddr.get());
    CHECK(additionalReads->lastAddr == 0);
 
    // Nothing has been done to the target portion yet
@@ -61,9 +61,10 @@ TEST_CASE("Patcher: patching 1 partial sector")
          targetPortion.data(),
          targetPortion.size_bytes()));
 
-   CHECK(!patcher.Patch(TestSector::kSectorAddr, additionalRead).has_value());
+   CHECK(!patcher.Patch(TestSector::kSectorAddr.get(), additionalRead)
+             .has_value());
 
-   CHECK(!patcher.Patch(TestSector::kSectorAddr + kOffset, targetPortion)
+   CHECK(!patcher.Patch(TestSector::kSectorAddr.get() + kOffset, targetPortion)
              .has_value());
 
    const auto sector = reinterpret_cast<spec::Sector*>(sectorData.data());
