@@ -2,18 +2,22 @@
 
 #include <span>
 #include <optional>
+#include <vector>
 
 namespace tdd::tk::rompatch {
 
 class [[nodiscard]] IPatcher
 {
 public:
-   // Additional complete sectors to feed the patcher with before the whole
-   // range can be succesfully patched.
+   // Additional blocks of data to feed the patcher with before the whole
+   // range can be succesfully patched. For file format with fixed data blocks
+   // such as CDs, the range being patched could start or end in the middle of
+   // a block. It is expected that the Patcher would not request more than 2
+   // additional full blocks of data.
    struct [[nodiscard]] AdditionalReads
    {
-      uint64_t firstAddr;
-      uint64_t lastAddr;
+      std::vector<uint64_t> addrs;
+      uint64_t blockSize;
    };
 
    virtual ~IPatcher() = default;

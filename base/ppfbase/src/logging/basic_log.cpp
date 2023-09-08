@@ -3,6 +3,7 @@
 #include <ppfbase/chrono/timestamp.h>
 #include <ppfbase/diagnostics/assert.h>
 
+#include <iostream>
 #include <set>
 
 namespace tdd::base::logging::details {
@@ -48,10 +49,6 @@ BasicLog::BasicLog(
 {
    TDD_ASSERT(filepath.is_absolute());
 
-   const auto exceptMask = m_os.exceptions();
-   m_os.exceptions(std::ios::failbit | std::ios::badbit);
-   m_os.open(m_file, std::fstream::app);
-   m_os.exceptions(exceptMask);
 }
 
 BasicLog::~BasicLog()
@@ -61,23 +58,26 @@ BasicLog::~BasicLog()
 
 void BasicLog::Write(const char* msg)
 {
+   const auto exceptMask = m_os.exceptions();
+   m_os.exceptions(std::ios::failbit | std::ios::badbit);
+   m_os.open(m_file, std::fstream::app);
+   m_os.exceptions(exceptMask);
    m_os << msg << std::flush;
+   m_os.close();
    RotateAsRequired();
 }
 
 void BasicLog::RotateAsRequired()
 {
-   if (m_file.file_size() < m_maxBytesPerFile) {
+   if (fs::file_size(m_file) < m_maxBytesPerFile) {
       return;
    }
 
-   m_os.close();
    auto archiveName = m_file.path().parent_path();
    archiveName /= m_file.path().stem();
    archiveName += chrono::TimeStamp::FilenameSuffix();
    archiveName += ILog::kExt;
    fs::rename(m_file, archiveName);
-   m_os.open(m_file, std::fstream::app);
 
    // TODO: move to log archivist
    // Prune old logs

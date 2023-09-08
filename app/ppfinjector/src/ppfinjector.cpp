@@ -11,7 +11,9 @@
 #include <ppfbase/filesystem/file.h>
 #include <ppfbase/filesystem/path_service.h>
 #include <ppfbase/process/this_module.h>
+#include <ppfbase/stdext/scope_exit.h>
 #include <ppfbase/stdext/string.h>
+#include <ppfbase/stdext/system_error.h>
 
 #include <atomic>
 #include <filesystem>
@@ -78,7 +80,7 @@ namespace {
       std::stringstream log;
       const auto filePtr = base::fs::File::GetFilePointer(hFile);
       if (filePtr.has_value()) {
-         log << filePtr.value();
+         log << filePtr->get();
       }
       else {
          log << "XXX";
@@ -88,6 +90,32 @@ namespace {
       TDD_VLOG2() << log.str();
    }
 
+   void PatchExtraRead(
+      const HANDLE hFile,
+      const tk::rompatch::IPatcher::AdditionalReads& extraReads)
+   {
+      std::vector<uint8_t> extraBlock(extraReads.blockSize, 0);
+      for (const auto addr : extraReads.addrs) {
+         const auto err =
+            base::fs::File::Seek(hFile, base::fs::File::FilePointer(addr));
+         TDD_CHECK(!err, "Unable to seek for extra read");
+
+         DWORD bytesRead = 0;
+         g_origReadFile(
+            hFile,
+            extraBlock.data(),
+            static_cast<DWORD>(extraBlock.size()),
+            &bytesRead,
+            nullptr);
+
+         TDD_CHECK(
+            extraBlock.size() == bytesRead,
+            "Unable to read requested amount");
+
+         const auto check = g_patch->Patch(addr, extraBlock);
+         TDD_CHECK(!check.has_value(), "Unexpected extra read requests");
+      }
+   }
 
    HANDLE WINAPI CreateFileWHook(
       _In_ LPCWSTR lpFileName,
@@ -97,15 +125,15 @@ namespace {
       _In_ DWORD dwCreationDisposition,
       _In_ DWORD dwFlagsAndAttributes,
       _In_opt_ HANDLE hTemplateFile)
-   {      
+   {
       const auto hFile = g_origCreateFileW(
-            lpFileName,
-            dwDesiredAccess,
-            dwShareMode,
-            lpSecurityAttributes,
-            dwCreationDisposition,
-            dwFlagsAndAttributes,
-            hTemplateFile);
+         lpFileName,
+         dwDesiredAccess,
+         dwShareMode,
+         lpSecurityAttributes,
+         dwCreationDisposition,
+         dwFlagsAndAttributes,
+         hTemplateFile);
 
       // We are not interested in failed opens.
       if (INVALID_HANDLE_VALUE == hFile) {
@@ -123,7 +151,7 @@ namespace {
       const auto target = fs::canonical(lpFileName, ec);
       if (ec) {
          TDD_LOG_DEBUG() << "Target [" << lpFileName
-            << "] can't be canonicalized: " << ec.message();
+                         << "] can't be canonicalized: " << ec.message();
          return hFile;
       }
 
@@ -153,25 +181,29 @@ namespace {
          return hFile;
       }
 
-      g_patch = std::make_unique<tk::rompatch::SimplePatcher>(
-         std::move(patch).value());
+      if (patchConfig.CalculateEdc()) {
+         TDD_LOG_INFO() << "EDC calculation required.";
+         g_patch = std::make_unique<tk::rompatch::cd::Patcher>(
+            std::move(patch).value());
+      }
+      else {
+         g_patch = std::make_unique<tk::rompatch::SimplePatcher>(
+            std::move(patch).value());
+      }
 
       return hFile;
    }
 
    BOOL WINAPI ReadFileHook(
-         _In_ HANDLE hFile,
-         LPVOID lpBuffer,
-         _In_ DWORD nNumberOfBytesToRead,
-         _Out_opt_ LPDWORD lpNumberOfBytesRead,
-         _Inout_opt_ LPOVERLAPPED lpOverlapped)
+      _In_ HANDLE hFile,
+      LPVOID lpBuffer,
+      _In_ DWORD nNumberOfBytesToRead,
+      _Out_opt_ LPDWORD lpNumberOfBytesRead,
+      _Inout_opt_ LPOVERLAPPED lpOverlapped)
    {
-
-      const bool skipHook = !HookStatus::ShouldExecute()
-         || hFile == NULL
-         || hFile == INVALID_HANDLE_VALUE
-         || hFile != g_targetFile
-         || nullptr == g_patch;
+      const bool skipHook = !HookStatus::ShouldExecute() || hFile == NULL ||
+         hFile == INVALID_HANDLE_VALUE || hFile != g_targetFile ||
+         nullptr == g_patch;
 
       if (skipHook) {
          return g_origReadFile(
@@ -207,29 +239,45 @@ namespace {
       LastErrorRestorer lastErr;
 
       // 3. Apply patch
-      if (targetAddr.has_value()) {
-         std::ignore = g_patch->Patch(
-            targetAddr.value(),
-            std::span(static_cast<uint8_t*>(lpBuffer) , *lpNumberOfBytesRead));
-      }
-      else {
+      if (!targetAddr.has_value()) {
          TDD_LOG_WARN() << "Unable to get file pointer location for read";
+         return success;
       }
 
+      const auto extraReads = g_patch->Patch(
+         targetAddr.value().get(),
+         std::span(static_cast<uint8_t*>(lpBuffer), *lpNumberOfBytesRead));
+
+      if (!extraReads.has_value()) {
+         return success;
+      }
+
+      TDD_ON_SCOPE_EXIT(
+         const LARGE_INTEGER location{
+            .QuadPart = targetAddr.value().get() + *lpNumberOfBytesRead};
+         if (!::SetFilePointerEx(hFile, location, nullptr, FILE_BEGIN)) {
+            const auto err = stdext::make_last_error();
+            TDD_LOG_ERROR()
+               << "Unable to restore file pointer: " << err.message();
+         });
+
+      PatchExtraRead(hFile, extraReads.value());
+      const auto check = g_patch->Patch(
+         targetAddr.value().get(),
+         std::span(static_cast<uint8_t*>(lpBuffer), *lpNumberOfBytesRead));
+      TDD_CHECK(!check.has_value(), "Unexpected extra read requests");
       return success;
    }
 
    BOOL ReadFileExHook(
-         _In_ HANDLE hFile,
-         LPVOID lpBuffer,
-         _In_ DWORD nNumberOfBytesToRead,
-         _Inout_ LPOVERLAPPED lpOverlapped,
-         _In_ LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine)
+      _In_ HANDLE hFile,
+      LPVOID lpBuffer,
+      _In_ DWORD nNumberOfBytesToRead,
+      _Inout_ LPOVERLAPPED lpOverlapped,
+      _In_ LPOVERLAPPED_COMPLETION_ROUTINE lpCompletionRoutine)
    {
-      const bool skipHook = !HookStatus::ShouldExecute()
-         || hFile == NULL
-         || hFile == INVALID_HANDLE_VALUE
-         || hFile != g_targetFile;
+      const bool skipHook = !HookStatus::ShouldExecute() || hFile == NULL ||
+         hFile == INVALID_HANDLE_VALUE || hFile != g_targetFile;
 
       if (skipHook) {
          return g_origReadFileEx(
@@ -263,7 +311,11 @@ namespace {
       if (!success) {
          return success;
       }
-      if (g_targetFile != hObject || hObject == INVALID_HANDLE_VALUE) {
+
+      const bool skipHook = !HookStatus::ShouldExecute() ||
+         g_targetFile != hObject || hObject == INVALID_HANDLE_VALUE;
+
+      if (skipHook) {
          return success;
       }
 
@@ -285,13 +337,9 @@ namespace {
          reinterpret_cast<PVOID*>(&g_origCreateFileW),
          CreateFileWHook);
 
-      DetourAttach(
-         reinterpret_cast<PVOID*>(&g_origReadFile),
-         ReadFileHook);
+      DetourAttach(reinterpret_cast<PVOID*>(&g_origReadFile), ReadFileHook);
 
-      DetourAttach(
-         reinterpret_cast<PVOID*>(&g_origReadFileEx),
-         ReadFileExHook);
+      DetourAttach(reinterpret_cast<PVOID*>(&g_origReadFileEx), ReadFileExHook);
 
       DetourAttach(
          reinterpret_cast<PVOID*>(&g_origCloseHandle),
@@ -334,16 +382,15 @@ BOOL APIENTRY DllMain(HMODULE, DWORD reason, LPVOID)
       return TRUE;
    }
 
-    switch (reason)
-    {
-    case DLL_PROCESS_ATTACH:
-       tdd::app::ppfinjector::InitLog();
-       tdd::app::ppfinjector::InstallHooks();
-       break;
-    case DLL_PROCESS_DETACH:
-       tdd::app::ppfinjector::RemoveHooks();
-       break;
-    }
+   switch (reason) {
+   case DLL_PROCESS_ATTACH:
+      tdd::app::ppfinjector::InitLog();
+      tdd::app::ppfinjector::InstallHooks();
+      break;
+   case DLL_PROCESS_DETACH:
+      tdd::app::ppfinjector::RemoveHooks();
+      break;
+   }
 
-    return TRUE;
+   return TRUE;
 }

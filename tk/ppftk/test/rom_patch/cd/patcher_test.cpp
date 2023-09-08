@@ -50,8 +50,8 @@ TEST_CASE("Patcher: patching 1 partial sector")
       patcher.Patch(TestSector::kSectorAddr.get() + kOffset, targetPortion);
 
    CHECK(additionalReads.has_value());
-   CHECK(additionalReads->firstAddr == TestSector::kSectorAddr.get());
-   CHECK(additionalReads->lastAddr == 0);
+   CHECK(additionalReads->addrs.front() == TestSector::kSectorAddr.get());
+   CHECK(additionalReads->addrs.size() == 1);
 
    // Nothing has been done to the target portion yet
    CHECK(
