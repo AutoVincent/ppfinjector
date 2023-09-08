@@ -16,11 +16,13 @@ namespace tdd::app::emulauncher::cmd::test {
       bool Execute() override;
    private:
       void VerifyPaths();
-      void DoTest();
+      void DoTest() const;
 
       gsl::not_null<CLI::App*> m_cmd;
       std::filesystem::path m_original;
       std::filesystem::path m_verification;
+      bool m_checkEdc;
+      bool m_checkEcc;
    };
 
 }
