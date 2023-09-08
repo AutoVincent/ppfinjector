@@ -7,6 +7,11 @@ namespace tdd::tk::rompatch::cd::spec {
 // ECMA-130, 14
 inline constexpr size_t kSectorSize = 2352;
 
+inline constexpr size_t kEdcSize = 4;
+inline constexpr size_t kEccPSize = 172;
+inline constexpr size_t kEccQSize = 104;
+inline constexpr size_t kEccSize = kEccPSize + kEccQSize;
+
 // 14.1
 inline constexpr std::array<uint8_t, 12> kSync =
    {00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 00};
@@ -37,7 +42,7 @@ static_assert(sizeof(SectorHeader) == kSectorHeaderSize);
 union [[nodiscard]] Edc
 {
    uint32_t full;
-   uint8_t parts[4];
+   uint8_t parts[kEdcSize];
 };
 
 // 14
@@ -54,8 +59,8 @@ struct [[nodiscard]] Mode1Data
    
    // 8 bytes of '0'
    uint8_t intermediate[8];
-   uint8_t pParity[172];
-   uint8_t qParity[104];
+   uint8_t pParity[kEccPSize];
+   uint8_t qParity[kEccQSize];
 };
 
 // 14
@@ -98,8 +103,8 @@ struct [[nodiscard]] Mode2Xa1Data
 {
    uint8_t data[2048];
    Edc edc;
-   uint8_t pParity[172];
-   uint8_t qParity[104];
+   uint8_t pParity[kEccPSize];
+   uint8_t qParity[kEccQSize];
 };
 
 // CD-ROM XA: 4.6.1
