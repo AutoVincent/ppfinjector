@@ -69,7 +69,7 @@ namespace {
          return {};
       }
 
-      const auto calculateEdc = json.get(schema::kCalculateEdc, false).asBool();
+      const auto calculateEdc = json.get(schema::kCalculateEdc, true).asBool();
       return {std::move(patchFile), calculateEdc};
    }
 
