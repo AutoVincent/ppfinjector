@@ -96,6 +96,8 @@ namespace {
       uint8_t mode = 0;
       uint8_t form = 0;
 
+      bool failForm2Edc = false;
+
       switch (target.header.parts.mode) {
       default:
          std::cout << "Unknown sector mode for sector " << sectorNumber << ": "
@@ -123,8 +125,10 @@ namespace {
          }
          else {
             form = 2;
-            blockSize =
-               cd::kSectorSize - (checkEdc ? 0 : cd::kEdcSize);
+            blockSize = cd::kSectorSize - cd::kEdcSize;
+            const auto tEdc = target.xa.form2.edc.full;
+            const auto vEdc = verification.xa.form2.edc.full;
+            failForm2Edc = tEdc != 0 && tEdc != vEdc;
          }
          break;
       }
@@ -132,6 +136,11 @@ namespace {
       if (0 != memcmp(&target, &verification, blockSize)) {
          throw std::runtime_error(
             "Sector " + std::to_string(sectorNumber) + " data mismatch");
+      }
+
+      if (failForm2Edc) {
+         throw std::runtime_error(
+            "Form 2 Sector " + std::to_string(sectorNumber) + " EDC mismatch");
       }
    }
 

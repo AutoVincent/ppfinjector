@@ -59,7 +59,7 @@ std::optional<IPatcher::AdditionalReads> Patcher::DoPatch(
 {
    {
       const auto additionalReads = RequireAdditionalReads(addr, buffer);
-      if (additionalReads.firstAddr != 0 || additionalReads.lastAddr != 0) {
+      if (!additionalReads.addrs.empty()) {
          return additionalReads;
       }
    }
@@ -67,9 +67,8 @@ std::optional<IPatcher::AdditionalReads> Patcher::DoPatch(
    // Apply patches.
 
    SectorRange range(addr, buffer);
-   auto firstSector = range.begin();
-   auto lastSector = range.end();
-   --lastSector;
+   const auto firstSector = range.begin();
+   const auto lastSector = range.end() - SectorDiff(1);
 
    auto firstPatch = std::lower_bound(
       m_patches.begin(),
@@ -98,7 +97,8 @@ IPatcher::AdditionalReads Patcher::RequireAdditionalReads(
 {
    const SectorRange range(targetAddr, buffer);
 
-   AdditionalReads read{0};
+   AdditionalReads read{};
+   read.blockSize = spec::kSectorSize;
 
    if (range.empty()) {
       TDD_DCHECK(false, "Patching empty range");
@@ -106,7 +106,7 @@ IPatcher::AdditionalReads Patcher::RequireAdditionalReads(
    }
 
    if (const auto& first = range.begin(); RequireFullSector(*first)) {
-      read.firstAddr = first->SectorAddress().get();
+      read.addrs.push_back(first->SectorAddress().get());
    }
 
    if (range.size() == 1) {
@@ -114,7 +114,7 @@ IPatcher::AdditionalReads Patcher::RequireAdditionalReads(
    }
 
    if (const auto& last = range.end() - SectorDiff(1); RequireFullSector(*last)) {
-      read.lastAddr= last->SectorAddress().get();
+      read.addrs.push_back(last->SectorAddress().get());
    }
 
    return read;
@@ -126,11 +126,15 @@ bool Patcher::RequireFullSector(const SectorView& sector) const noexcept
       return false;
    }
 
-   auto patch = std::lower_bound(
+   const auto patch = std::lower_bound(
       m_patches.begin(),
       m_patches.end(),
       sector,
       LowerBound);
+
+   if (patch == m_patches.end()) {
+      return false;
+   }
 
    if (patch->SectorNumber() == sector.SectorNumber()) {
       return !patch->HasUpdatedEdc();
