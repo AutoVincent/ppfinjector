@@ -1,5 +1,4 @@
 #include "hook_status.h"
-#include "read_ops_log.h"
 
 #include <ppftk/config/app.h>
 #include <ppftk/config/patch.h>
@@ -35,7 +34,6 @@ namespace {
    auto g_origReadFileEx = ReadFileEx;
    auto g_origCloseHandle = CloseHandle;
 
-   std::unique_ptr<ReadOpsLog> g_readOpsLog;
    std::unique_ptr<tk::rompatch::IPatcher> g_patch;
    std::atomic<HANDLE> g_targetFile = INVALID_HANDLE_VALUE;
 
@@ -69,6 +67,25 @@ namespace {
       const auto [winEnd, nothing] =
          std::mismatch(kWindows.begin(), kWindows.end(), file.begin());
       return kWindows.end() != winEnd;
+   }
+
+   void LogReadOp(const HANDLE hFile, DWORD readSize)
+   {
+      if (!TDD_LOG_IS_ON(Verbose_2)) {
+         return;
+      }
+
+      std::stringstream log;
+      const auto filePtr = base::fs::File::GetFilePointer(hFile);
+      if (filePtr.has_value()) {
+         log << filePtr.value();
+      }
+      else {
+         log << "XXX";
+      }
+
+      log << ":" << readSize;
+      TDD_VLOG2() << log.str();
    }
 
 
@@ -129,7 +146,6 @@ namespace {
       }
 
       g_targetFile = hFile;
-      g_readOpsLog = std::make_unique<ReadOpsLog>(hFile, target);
 
       auto patch = tk::rompatch::ppf::Parse(patchConfig.PatchFile());
       if (!patch.has_value()) {
@@ -168,8 +184,7 @@ namespace {
 
       TDD_PPF_DISABLE_FURTHER_HOOKS();
 
-      TDD_DASSERT(g_readOpsLog.get() != nullptr);
-      g_readOpsLog->Log(nNumberOfBytesToRead);
+      LogReadOp(hFile, nNumberOfBytesToRead);
 
       if (nullptr != lpOverlapped) {
          TDD_LOG_WARN() << "Overlapped IO used to read target";
@@ -227,8 +242,7 @@ namespace {
 
       TDD_LOG_WARN() << "ReadFileEx is used to read target file!";
 
-      TDD_DASSERT(g_readOpsLog.get() != nullptr);
-      g_readOpsLog->Log(nNumberOfBytesToRead);
+      LogReadOp(hFile, nNumberOfBytesToRead);
 
       // 2. ReadFileEx. We need to replace the original OVERLAPPED structure.
       const auto success = g_origReadFileEx(
