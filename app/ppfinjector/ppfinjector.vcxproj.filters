@@ -21,9 +21,6 @@
     <ClCompile Include="src\ppfinjector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\read_ops_log.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\ppfinjector.def">
@@ -32,9 +29,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\hook_status.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\read_ops_log.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

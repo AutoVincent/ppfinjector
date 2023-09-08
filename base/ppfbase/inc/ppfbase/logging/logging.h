@@ -39,7 +39,7 @@ namespace tdd::base::logging {
 
 #define TDD_LOG(level) TDD_LOG_IF(true, level)
 
-#define TDD_VLOG(n) TDD_LOG(TDD_LOG_LEVEL(Verbose_ ## n))
+#define TDD_VLOG(n) TDD_LOG(TDD_JOIN_TOKEN(Verbose_, n))
 
 #define TDD_VLOG2()        TDD_VLOG(2)
 #define TDD_VLOG1()        TDD_VLOG(1)
