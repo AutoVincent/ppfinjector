@@ -2,8 +2,6 @@
 
 #include "ppf/schema.h"
 
-#include <ppftk/rom_patch/flat_patch.h>
-
 #include <ppfbase/logging/logging.h>
 #include <ppfbase/stdext/iostream.h>
 

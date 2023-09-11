@@ -1,4 +1,3 @@
-#include <ppftk/rom_patch/flat_patch.h>
 #include <ppftk/rom_patch/cd/spec.h>
 #include <ppftk/rom_patch/ppf/parser.h>
 #include <ppftk/rom_patch/ppf/ppf3.h>

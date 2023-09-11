@@ -41,9 +41,6 @@
     <ClInclude Include="inc\ppftk\rom_patch\patch_descriptor.h">
       <Filter>PublicHeaders\rom_patch</Filter>
     </ClInclude>
-    <ClInclude Include="inc\ppftk\rom_patch\flat_patch.h">
-      <Filter>PublicHeaders\rom_patch</Filter>
-    </ClInclude>
     <ClInclude Include="src\rom_patch\ppf\v3.h">
       <Filter>Source\rom_patch\ppf</Filter>
     </ClInclude>
@@ -106,9 +103,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\rom_patch\flat_patch.cpp">
-      <Filter>Source\rom_patch</Filter>
-    </ClCompile>
     <ClCompile Include="src\rom_patch\patch_descriptor.cpp">
       <Filter>Source\rom_patch</Filter>
     </ClCompile>
