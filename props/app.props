@@ -3,8 +3,24 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="tk.props" />
   </ImportGroup>
-  <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
-  <ItemDefinitionGroup />
-  <ItemGroup />
+  <PropertyGroup Label="UserMacros">
+    <TddApp>$(SolutionDir)app</TddApp>
+    <TddAppRes>$(TddApp)\tddapp\res</TddAppRes>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IncludePath>$(TddApp)\tddapp\inc;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Manifest>
+      <AdditionalManifestFiles>$(TddAppRes)\OsCompat.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="TddApp">
+      <Value>$(TddApp)</Value>
+    </BuildMacro>
+    <BuildMacro Include="TddAppRes">
+      <Value>$(TddAppRes)</Value>
+    </BuildMacro>
+  </ItemGroup>
 </Project>
