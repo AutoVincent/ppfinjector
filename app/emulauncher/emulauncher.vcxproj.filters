@@ -29,6 +29,12 @@
     <ClCompile Include="src\cmds\test\live_patch.cpp">
       <Filter>Source\cmds\test</Filter>
     </ClCompile>
+    <ClCompile Include="src\launch_emulator.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cmds\cmd_choose_emulator.cpp">
+      <Filter>Source\cmds</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\cmds\sub_cmd.h">
@@ -45,6 +51,9 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Resource Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\launch_emulator.h">
+      <Filter>Source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

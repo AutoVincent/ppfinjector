@@ -74,9 +74,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\cmds\cli.cpp" />
+    <ClCompile Include="src\cmds\cmd_choose_emulator.cpp" />
     <ClCompile Include="src\cmds\test\live_patch.cpp" />
     <ClCompile Include="src\cmds\test\test_cmds.cpp" />
     <ClCompile Include="src\emulauncher.cpp" />
+    <ClCompile Include="src\launch_emulator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\base\ppfbase\ppfbase.vcxproj">
@@ -98,6 +100,7 @@
     <ClInclude Include="src\cmds\sub_cmd.h" />
     <ClInclude Include="src\cmds\handlers.h" />
     <ClInclude Include="src\cmds\test\live_patch.h" />
+    <ClInclude Include="src\launch_emulator.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="emulauncher.rc" />
