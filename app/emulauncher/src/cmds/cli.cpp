@@ -15,6 +15,7 @@ namespace {
    void RegisterSubCmds(CLI::App& emulauncher)
    {
       g_cmds.push_back(AttachTest(emulauncher));
+      g_cmds.push_back(AttachChooseEmulator(emulauncher));
    }
 
    int ExecuteSubCmds()

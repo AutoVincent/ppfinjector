@@ -4,6 +4,7 @@
 
 namespace tdd::app::emulauncher::cmd {
 
-   [[nodiscard]] SubCmdPtr AttachTest(CLI::App& emulauncher);
+[[nodiscard]] SubCmdPtr AttachTest(CLI::App& emulauncher);
+[[nodiscard]] SubCmdPtr AttachChooseEmulator(CLI::App& emulauncher);
 
 }
