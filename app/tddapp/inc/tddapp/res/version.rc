@@ -1,0 +1,68 @@
+// To use this version resource template do the following:
+//    1. Add a version resource to the binary project.
+//    2. Include 'branding.h' from 'ppfbase' at the top of the project's rc file.
+//    3. Locate the generate version section in the rc file.
+//    4. Define TDD_APP_BIN_NAME, TDD_APP_BIN_DESCRIPTION and TDD_APP_BIN_TYPE
+//       with the appropriate values.
+//    5. Include this file after the defined values.
+//    6. Delete the generated version resource.
+
+#ifdef TDD_APP_VERSION_RC
+#error version.rc already included!
+#else
+#define TDD_APP_VERSION_RC
+
+#ifndef TDD_APP_BIN_DESCRIPTION
+#error Binary file description missing
+#endif
+
+#ifndef TDD_APP_BIN_NAME
+#error Binary file name missing
+#endif
+
+#ifndef TDD_APP_BIN_TYPE
+#error Binary file type missing
+#endif
+
+// VS_FF_PRERELEASE. Set to 0 on release branches
+#define TDD_APP_PRE_RELEASE_FLAG 0x2L
+
+#ifdef _DEBUG
+#define TDD_APP_FILE_FLAGS 0x1L
+#else
+#define TDD_APP_FILE_FLAGS 0x0L
+#endif
+
+// English UK
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION      TDD_PRODUCT_COMMA_VER
+ PRODUCTVERSION   TDD_PRODUCT_COMMA_VER
+ FILEFLAGSMASK    0x3fL
+ FILEFLAGS        TDD_APP_FILE_FLAGS | TDD_APP_PRE_RELEASE_FLAG
+ FILEOS           0x40004L
+ FILETYPE         TDD_APP_BIN_TYPE
+ FILESUBTYPE      0x0L
+ BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+       BLOCK "080904b0"
+       BEGIN
+          VALUE "CompanyName",      TDD_COMPANY_NAME
+          VALUE "FileDescription",  TDD_APP_BIN_DESCRIPTION
+          VALUE "FileVersion",      TDD_PRODUCT_DOT_VER_STR
+          VALUE "InternalName",     TDD_APP_BIN_NAME
+          VALUE "LegalCopyright",   TDD_COPYRIGHT
+          VALUE "OriginalFilename", TDD_APP_BIN_NAME
+          VALUE "ProductName",      TDD_PRODUCT_NAME
+          VALUE "ProductVersion",   TDD_PRODUCT_DOT_VER_STR
+       END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+       VALUE "Translation", 0x809, 1200
+    END
+ END
+
+#endif
+
+// Leave a new line at the end to keep resource compiler happy.

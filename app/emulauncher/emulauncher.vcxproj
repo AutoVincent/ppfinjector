@@ -93,10 +93,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="src\cmds\cli.h" />
     <ClInclude Include="src\cmds\sub_cmd.h" />
     <ClInclude Include="src\cmds\handlers.h" />
     <ClInclude Include="src\cmds\test\live_patch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="emulauncher.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
